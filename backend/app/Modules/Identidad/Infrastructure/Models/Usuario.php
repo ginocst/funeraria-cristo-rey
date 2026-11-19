@@ -99,7 +99,7 @@ class Usuario extends Authenticatable
     /** Matriz de permisos (config/funeraria.php). La suplencia no entrega los permisos excluidos */
     public function tienePermiso(string $permiso): bool
     {
-        $roles = config("funeraria.permisos.$permiso", []);
+        $roles = config('funeraria.permisos', [])[$permiso] ?? [];
         $excluidos = config('funeraria.excluidos_de_suplencia', []);
 
         foreach ($this->rolesVigentes() as $r) {
