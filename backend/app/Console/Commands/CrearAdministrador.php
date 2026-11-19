@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\DB;
 /**
  * Crea la primera cuenta de administrador en producción
  * Interactivo: php artisan funeraria:crear-admin correo@dominio.cl "Renato Osses" 12345678-9
- * En AWS (ECS): el entrypoint lo llama con --password-env y --si-no-existe.
+ * En AWS (ECS): el entrypoint lo llama con --password-env y --si-no-existe
  */
 class CrearAdministrador extends Command
 {
