@@ -17,17 +17,20 @@ it('responde 401 a quien no ha iniciado sesión', function () {
     $this->getJson('/api/expedientes')->assertUnauthorized();
 });
 
-it('impide a un operario ver solicitudes o pagos (CP-07)', function () {
+it('impide a un operario ver solicitudes o pagos', function () {
     $operario = $this->usuario('Operario');
     $this->actingAs($operario)->getJson('/api/solicitudes')->assertForbidden();
     $this->actingAs($operario)->getJson('/api/pagos')->assertForbidden();
     $this->actingAs($operario)->getJson('/api/itinerario')->assertOk();
 });
 
-it('impide al coordinador evaluar solicitudes y gestionar usuarios', function () {
+it('impide al coordinador evaluar solicitudes, gestionar usuarios y administrar vehículos', function () {
     $coordinador = $this->usuario('Coordinador');
     $this->actingAs($coordinador)->postJson('/api/solicitudes/1/aceptar', [], ['Idempotency-Key' => 'x'])->assertForbidden();
     $this->actingAs($coordinador)->getJson('/api/usuarios')->assertForbidden();
+    $this->actingAs($coordinador)->getJson('/api/vehiculos')->assertOk();
+    $this->actingAs($coordinador)->postJson('/api/vehiculos', [])->assertForbidden();
+    $this->actingAs($coordinador)->putJson('/api/vehiculos/1', [])->assertForbidden();
 });
 
 it('exige configurar el MFA a administradores antes de operar', function () {

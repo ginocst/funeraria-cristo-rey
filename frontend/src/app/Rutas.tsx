@@ -230,21 +230,12 @@ const enrutador = createBrowserRouter([
             element: r([P.configuracion], <Configuracion />),
           },
           { path: "bitacora", element: r([P.bitacora], <Bitacora />) },
-          {
-            path: "*",
-            element: (
-              <Box sx={{ py: 8, textAlign: "center" }}>
-                <Typography variant="h2">Página no encontrada</Typography>
-                <Button component={RouterLink} to="/panel" sx={{ mt: 2 }}>
-                  Ir al panel
-                </Button>
-              </Box>
-            ),
-          },
         ],
       },
     ],
   },
+  // Cualquier otra dirección va a la portada
+  { path: "*", element: <Navigate to="/" replace /> },
 ]);
 
 export function Rutas() {

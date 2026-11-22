@@ -17,7 +17,7 @@ CREATE OR REPLACE FUNCTION pg_temp.rel(horas numeric) RETURNS timestamp AS $$
     SELECT (to_timestamp(round(extract(epoch FROM now() + horas * interval '1 hour') / 900) * 900) AT TIME ZONE 'UTC')::timestamp(0)
 $$ LANGUAGE sql;
 
--- Dígito verificador de un RUT (solo para que los datos demo se vean reales).
+-- Dígito verificador de un RUT
 CREATE OR REPLACE FUNCTION pg_temp.rut(n bigint) RETURNS text AS $$
     SELECT n::text || '-' || CASE r WHEN 11 THEN '0' WHEN 10 THEN 'K' ELSE r::text END
       FROM (SELECT 11 - (SUM(substr(reverse(n::text), k, 1)::int * (2 + (k - 1) % 6)) % 11) AS r
@@ -33,8 +33,8 @@ $$ LANGUAGE sql;
 -- Sucursales y usuarios
 -- ---------------------------------------------------------------------
 INSERT INTO sucursales (id, nombre, direccion, telefono, created_at, updated_at) VALUES
-    (1, 'Temuco', 'Av. Caupolicán 1250, Temuco', '+56 45 221 3400', now(), now()),
-    (2, 'Padre Las Casas', 'Calle Maquehue 640, Padre Las Casas', '+56 45 226 1180', now(), now());
+    (1, 'Sucursal Blanco', 'Calle Blanco #142, entre Lautaro y Miraflores, Temuco', '+56 9 6729 4759', now(), now()),
+    (2, 'Casa Matriz', 'Manuel Montt #1991, Pobl. Santa Elena, Temuco', '+56 9 8601 7135', now(), now());
 
 INSERT INTO usuarios (id, sucursal_id, nombre, rut, email, telefono, password, activo, created_at, updated_at) VALUES
     (1, 1, 'Renato Osses', pg_temp.rut(9876543), 'renato.osses@cristorey.test', '+56 9 8123 4567', '$argon2id$v=19$m=65536,t=4,p=1$MmdjbkhFWmltM29qSTkvbA$napHEznEVamCPNNBh63M324XMdl33Z3ou1tfWxVqZ5w', true, now(), now()),
@@ -63,15 +63,15 @@ INSERT INTO convenios (id, nombre, institucion, tipo, descuento_pct, vigencia_de
         'Descuento sobre el valor del servicio para pensionados de la Defensa.', 'Oficina de bienestar regional', true, now(), now()),
     (5, 'Asociación de Funcionarios Municipales', 'Asociación de Funcionarios Municipales de Temuco', 'descuento', 12, '2024-01-01', pg_temp.hoy() + 240,
         'Descuento para socios activos y su grupo familiar directo.', 'Directiva de la asociación', true, now(), now()),
-    (6, 'Colegio de Profesores Comunal', 'Colegio de Profesores, comunal Padre Las Casas', 'descuento', 8, '2022-01-01', pg_temp.hoy() - 40,
+    (6, 'Colegio de Profesores Comunal', 'Colegio de Profesores, comunal Temuco', 'descuento', 8, '2022-01-01', pg_temp.hoy() - 40,
         'Convenio vencido; pendiente de renovación.', 'Directiva comunal', true, now(), now());
 
 -- ---------------------------------------------------------------------
 -- Proveedores y productos
 -- ---------------------------------------------------------------------
 INSERT INTO proveedores (id, nombre, rut, rubro, contacto, telefono, email, direccion, notas, activo, created_at, updated_at) VALUES
-    (1, 'Ataúdes del Sur Ltda.', pg_temp.rut(76345120), 'urnas', 'Marcelo Pino', '+56 45 224 8890', 'ventas@ataudesdelsur.test', 'Camino a Labranza km 3, Temuco', 'Despacho en 48 horas. Pedido mínimo: 3 unidades.', true, now(), now()),
-    (2, 'Maderas Nativas Cautín SpA', pg_temp.rut(77210984), 'urnas', 'Fabiola Henríquez', '+56 9 9876 1122', 'contacto@maderascautin.test', 'Ruta S-30 km 12, Vilcún', 'Fabrica modelos en roble, raulí y lenga; acepta grabado personalizado.', true, now(), now()),
+    (1, 'Ataúdes del Sur Ltda.', pg_temp.rut(76345120), 'urnas', 'Marcelo Pino', '+56 45 224 8890', 'ventas@ataudesdelsur.test', 'Av. Caupolicán 1450, Temuco', 'Despacho en 48 horas. Pedido mínimo: 3 unidades.', true, now(), now()),
+    (2, 'Maderas Nativas Cautín SpA', pg_temp.rut(77210984), 'urnas', 'Fabiola Henríquez', '+56 9 9876 1122', 'contacto@maderascautin.test', 'Av. Balmaceda 1830, Temuco', 'Fabrica modelos en roble, raulí y lenga; acepta grabado personalizado.', true, now(), now()),
     (3, 'Florería Los Aromos', pg_temp.rut(76998123), 'flores', 'Patricia Muñoz', '+56 9 8765 4433', 'pedidos@losaromos.test', 'Av. Alemania 0980, Temuco', 'Coronas y cubre urnas con 6 horas de anticipación.', true, now(), now()),
     (4, 'Insumos Funerarios Araucanía', pg_temp.rut(78123456), 'insumos', 'Rodrigo Catalán', '+56 45 227 6600', 'ventas@insumosaraucania.test', 'Calle Lautaro 455, Temuco', 'Urnas de cremación, cirios y libros de condolencias.', true, now(), now());
 
@@ -155,7 +155,7 @@ CREATE TEMP TABLE demo_nombres AS SELECT
           'Painemal', 'Catrileo', 'Millapán', 'Ñancupil', 'Quilaqueo', 'Curiche', 'Sandoval', 'Jara', 'Vergara', 'Riquelme'] AS a,
     ARRAY['Los Copihues', 'Av. Pedro de Valdivia', 'Las Araucarias', 'Los Aromos', 'Manuel Montt', 'Caupolicán', 'Lautaro', 'Balmaceda',
           'Aníbal Pinto', 'Las Encinas', 'Pasaje Los Notros', 'Villa Los Ríos'] AS calles,
-    ARRAY['Temuco', 'Temuco', 'Temuco', 'Padre Las Casas', 'Padre Las Casas', 'Labranza', 'Vilcún', 'Freire', 'Lautaro', 'Nueva Imperial'] AS comunas;
+    ARRAY['Temuco', 'Temuco', 'Temuco', 'Temuco', 'Temuco', 'Temuco', 'Temuco', 'Temuco', 'Temuco', 'Temuco'] AS comunas;
 
 INSERT INTO clientes (id, rut, nombre, telefono, email, direccion, comuna, created_at, created_by, updated_at)
 SELECT h.i,
@@ -189,9 +189,9 @@ SELECT i, i, sucursal, i, convenio, 'cerrado', traslado - interval '2 days', CAS
 INSERT INTO solicitudes (id, expediente_id, sucursal_id, estado, valor_servicio, descuento, velatorio_inicio, lugar_velatorio, traslado_at,
                          lugar_sepultura, sepultura_detalle, mensaje, evaluada_por, evaluada_at, created_at, created_by, updated_at)
 SELECT i, i, sucursal, 'ejecutada', valor, descuento, traslado - interval '20 hours',
-       (ARRAY['Sala Velatoria Cristo Rey, Temuco', 'Sala Velatoria Cristo Rey, Padre Las Casas', 'Domicilio particular', 'Capilla San Francisco, Temuco'])[1 + (i + sucursal) % 4],
+       (ARRAY['Sala Velatoria Cristo Rey, Temuco', 'Domicilio particular', 'Capilla San Francisco, Temuco'])[1 + (i + sucursal) % 3],
        traslado,
-       CASE WHEN ataud IN (9, 10) THEN 'Crematorio de Temuco' ELSE (ARRAY['Cementerio General de Temuco', 'Cementerio de Padre Las Casas', 'Cementerio Parque Temuco', 'Cementerio de Labranza'])[1 + (i * 7) % 4] END,
+       CASE WHEN ataud IN (9, 10) THEN 'Crematorio de Temuco' ELSE (ARRAY['Cementerio General de Temuco', 'Cementerio Parque Temuco'])[1 + (i * 7) % 2] END,
        CASE WHEN ataud IN (9, 10) THEN NULL ELSE 'Patio ' || (1 + i % 9) || ', sepultura ' || (10 + (i * 13) % 240) END,
        CASE WHEN i % 4 = 0 THEN 'Con cariño de sus hijos y nietos.' END,
        1, traslado - interval '30 hours', traslado - interval '40 hours', CASE WHEN sucursal = 2 THEN 2 ELSE 1 END, traslado + interval '6 hours'
@@ -272,14 +272,14 @@ SELECT p.expediente_id, p.medio_pago_id, 'anulacion', -p.monto, p.id, 'El abono 
 -- ---------------------------------------------------------------------
 INSERT INTO clientes (id, rut, nombre, telefono, email, direccion, comuna, created_at, created_by, updated_at) VALUES
     (1001, pg_temp.rut(13456789), 'Marcela Catrileo Painemal', '+56 9 8456 1290', 'marcela.catrileo@correo.test', 'Las Araucarias 845', 'Temuco', pg_temp.rel(-30), 1, pg_temp.rel(-30)),
-    (1002, pg_temp.rut(12987654), 'Hernán Quilaqueo Soto', '+56 9 7345 8812', NULL, 'Pasaje Los Notros 112', 'Padre Las Casas', pg_temp.rel(-8), 2, pg_temp.rel(-8)),
+    (1002, pg_temp.rut(12987654), 'Hernán Quilaqueo Soto', '+56 9 7345 8812', NULL, 'Pasaje Los Notros 112', 'Temuco', pg_temp.rel(-8), 2, pg_temp.rel(-8)),
     (1003, pg_temp.rut(10234567), 'Gladys Sandoval Jara', '+56 9 6234 7781', 'gsandoval@correo.test', 'Manuel Montt 1290', 'Temuco', pg_temp.rel(-36), 1, pg_temp.rel(-36)),
-    (1004, pg_temp.rut(16345987), 'Cristián Vergara Millapán', '+56 9 9123 4456', 'cvergara@correo.test', 'Balmaceda 455', 'Labranza', pg_temp.rel(-5), 2, pg_temp.rel(-5)),
+    (1004, pg_temp.rut(16345987), 'Cristián Vergara Millapán', '+56 9 9123 4456', 'cvergara@correo.test', 'Balmaceda 455', 'Temuco', pg_temp.rel(-5), 2, pg_temp.rel(-5)),
     (1005, pg_temp.rut(11876543), 'Isabel Riquelme Tapia', '+56 9 8876 2234', 'isabel.riquelme@correo.test', 'Los Aromos 330', 'Temuco', pg_temp.rel(-20), 1, pg_temp.rel(-20)),
-    (1006, pg_temp.rut(17654321), 'Felipe Curiche Araya', '+56 9 7654 9981', NULL, 'Villa Los Ríos, casa 28', 'Padre Las Casas', pg_temp.rel(-4), 2, pg_temp.rel(-4)),
+    (1006, pg_temp.rut(17654321), 'Felipe Curiche Araya', '+56 9 7654 9981', NULL, 'Villa Los Ríos, casa 28', 'Temuco', pg_temp.rel(-4), 2, pg_temp.rel(-4)),
     (1007, pg_temp.rut(14321987), 'Paola Huenchullán Reyes', '+56 9 6543 1122', 'paola.h@correo.test', 'Caupolicán 1780', 'Temuco', pg_temp.rel(-28), 1, pg_temp.rel(-28)),
-    (1008, pg_temp.rut(15987321), 'Mauricio Flores Ñancupil', '+56 9 9988 7766', NULL, 'Lautaro 980', 'Freire', pg_temp.rel(-50), 2, pg_temp.rel(-50)),
-    (1009, pg_temp.rut(9876123), 'Ramón Espinoza Castillo', '+56 9 8899 0011', NULL, 'Aníbal Pinto 220', 'Vilcún', pg_temp.rel(-150), 1, pg_temp.rel(-150));
+    (1008, pg_temp.rut(15987321), 'Mauricio Flores Ñancupil', '+56 9 9988 7766', NULL, 'Lautaro 980', 'Temuco', pg_temp.rel(-50), 2, pg_temp.rel(-50)),
+    (1009, pg_temp.rut(9876123), 'Ramón Espinoza Castillo', '+56 9 8899 0011', NULL, 'Aníbal Pinto 220', 'Temuco', pg_temp.rel(-150), 1, pg_temp.rel(-150));
 
 INSERT INTO cliente_convenio (cliente_id, convenio_id, numero_socio, created_at, updated_at) VALUES
     (1001, 1, NULL, now(), now()), (1003, 3, 'S-48211', now(), now()), (1007, 5, 'S-10933', now(), now());
@@ -312,29 +312,29 @@ INSERT INTO solicitudes (id, expediente_id, sucursal_id, estado, valor_servicio,
     (1001, 1001, 1, 'aceptada', 990000, 0, pg_temp.rel(-20), 'Sala Velatoria Cristo Rey, Temuco', pg_temp.rel(2.5),
         'Cementerio General de Temuco', 'Patio 7, sepultura familiar 23', 'Siempre en nuestros corazones. Tus hijos y nietos.', NULL, 1, pg_temp.rel(-24), NULL, pg_temp.rel(-30), 1, pg_temp.rel(-24)),
     -- Velatorio recién iniciado; traslado mañana.
-    (1002, 1002, 2, 'aceptada', 790000, 0, pg_temp.loc(0, '09:00'), 'Domicilio particular, Padre Las Casas', pg_temp.loc(1, '11:00'),
-        'Cementerio de Padre Las Casas', 'Nicho 412, pabellón B', NULL, NULL, 1, pg_temp.rel(-6), NULL, pg_temp.rel(-8), 2, pg_temp.rel(-6)),
+    (1002, 1002, 2, 'aceptada', 790000, 0, pg_temp.loc(0, '09:00'), 'Domicilio particular, Temuco', pg_temp.loc(1, '11:00'),
+        'Cementerio General de Temuco', 'Nicho 412, pabellón B', NULL, NULL, 1, pg_temp.rel(-6), NULL, pg_temp.rel(-8), 2, pg_temp.rel(-6)),
     -- En traslado ahora mismo con la carroza arrendada.
     (1003, 1003, 1, 'aceptada', 1190000, 119000, pg_temp.rel(-26), 'Capilla San Francisco, Temuco', pg_temp.rel(-0.5),
         'Cementerio Parque Temuco', 'Sector Jardín, sepultura 88', NULL, NULL, 1, pg_temp.rel(-30), NULL, pg_temp.rel(-36), 1, pg_temp.rel(-30)),
     -- En revisión: el abono aún no alcanza el mínimo.
-    (1004, 1004, 2, 'en_revision', 890000, 0, pg_temp.loc(2, '18:00'), 'Sala Velatoria Cristo Rey, Padre Las Casas', pg_temp.loc(3, '11:00'),
-        'Cementerio de Padre Las Casas', NULL, NULL, NULL, NULL, NULL, NULL, pg_temp.rel(-5), 2, pg_temp.rel(-5)),
+    (1004, 1004, 2, 'en_revision', 890000, 0, pg_temp.loc(2, '18:00'), 'Sala Velatoria Cristo Rey, Temuco', pg_temp.loc(3, '11:00'),
+        'Cementerio General de Temuco', NULL, NULL, NULL, NULL, NULL, NULL, pg_temp.rel(-5), 2, pg_temp.rel(-5)),
     -- En revisión con abono suficiente: lista para aceptar.
     (1005, 1005, 1, 'en_revision', 1390000, 0, pg_temp.loc(1, '17:00'), 'Sala Velatoria Cristo Rey, Temuco', pg_temp.loc(2, '16:00'),
         'Cementerio General de Temuco', 'Patio 2, mausoleo familia Riquelme', 'Descansa en paz, papá.', NULL, NULL, NULL, NULL, pg_temp.rel(-20), 1, pg_temp.rel(-20)),
     -- Con observaciones del administrador.
-    (1006, 1006, 2, 'con_observaciones', 690000, 0, pg_temp.loc(3, '17:00'), 'Domicilio particular, Padre Las Casas', pg_temp.loc(4, '15:00'),
-        'Cementerio de Labranza', 'Nicho 77', NULL, 'El nicho indicado no está disponible según el cementerio. Confirmar otro con la familia.', 1, pg_temp.rel(-2), NULL, pg_temp.rel(-4), 2, pg_temp.rel(-2)),
+    (1006, 1006, 2, 'con_observaciones', 690000, 0, pg_temp.loc(3, '17:00'), 'Domicilio particular, Temuco', pg_temp.loc(4, '15:00'),
+        'Cementerio Parque Temuco', 'Nicho 77', NULL, 'El nicho indicado no está disponible según el cementerio. Confirmar otro con la familia.', 1, pg_temp.rel(-2), NULL, pg_temp.rel(-4), 2, pg_temp.rel(-2)),
     -- Aceptada para pasado mañana.
     (1007, 1007, 1, 'aceptada', 1190000, 143000, pg_temp.loc(1, '19:00'), 'Sala Velatoria Cristo Rey, Temuco', pg_temp.loc(2, '10:00'),
         'Cementerio General de Temuco', 'Patio 5, sepultura 140', NULL, NULL, 1, pg_temp.rel(-26), NULL, pg_temp.rel(-28), 1, pg_temp.rel(-26)),
     -- Cancelada por la familia.
-    (1008, 1008, 2, 'cancelada', 790000, 0, pg_temp.loc(0, '20:00'), 'Domicilio particular, Freire', pg_temp.loc(1, '15:00'),
-        'Cementerio de Freire', NULL, NULL, NULL, 1, pg_temp.rel(-40), 'La familia optó por realizar el servicio en Santiago.', pg_temp.rel(-50), 2, pg_temp.rel(-24)),
+    (1008, 1008, 2, 'cancelada', 790000, 0, pg_temp.loc(0, '20:00'), 'Domicilio particular, Temuco', pg_temp.loc(1, '15:00'),
+        'Cementerio General de Temuco', NULL, NULL, NULL, 1, pg_temp.rel(-40), 'La familia optó por realizar el servicio en Santiago.', pg_temp.rel(-50), 2, pg_temp.rel(-24)),
     -- No aplica.
-    (1009, 1009, 1, 'no_aplica', 890000, 0, pg_temp.rel(-140), 'Domicilio particular, Vilcún', pg_temp.rel(-120),
-        'Cementerio de Vilcún', NULL, NULL, 'El traslado solicitado queda fuera del área de cobertura de la funeraria.', 1, pg_temp.rel(-146), NULL, pg_temp.rel(-150), 1, pg_temp.rel(-146));
+    (1009, 1009, 1, 'no_aplica', 890000, 0, pg_temp.rel(-140), 'Domicilio particular (fuera del área de cobertura)', pg_temp.rel(-120),
+        'Cementerio fuera del área de cobertura', NULL, NULL, 'El traslado solicitado queda fuera del área de cobertura de la funeraria.', 1, pg_temp.rel(-146), NULL, pg_temp.rel(-150), 1, pg_temp.rel(-146));
 
 INSERT INTO producto_solicitud (producto_id, solicitud_id, cantidad, precio_unitario, created_at, updated_at) VALUES
     (1, 1001, 1, 1250000, now(), now()), (12, 1001, 2, 85000, now(), now()), (14, 1001, 1, 25000, now(), now()),
@@ -370,9 +370,9 @@ INSERT INTO actividades (expediente_id, tipo, lugar, inicio, fin, notas, created
     (1001, 'velatorio', 'Sala Velatoria Cristo Rey, Temuco', pg_temp.rel(-20), pg_temp.rel(2.5), NULL, now(), now()),
     (1001, 'misa', 'Capilla de la sala velatoria', pg_temp.rel(1), pg_temp.rel(2), 'Responso a cargo del párroco.', now(), now()),
     (1001, 'sepultacion', 'Cementerio General de Temuco', pg_temp.rel(3.5), pg_temp.rel(4.5), NULL, now(), now()),
-    (1002, 'velatorio', 'Domicilio particular, Padre Las Casas', pg_temp.loc(0, '09:00'), pg_temp.loc(1, '11:00'), 'Instalación con el furgón 2.', now(), now()),
-    (1002, 'misa', 'Parroquia de Padre Las Casas', pg_temp.loc(1, '09:30'), pg_temp.loc(1, '10:30'), NULL, now(), now()),
-    (1002, 'sepultacion', 'Cementerio de Padre Las Casas', pg_temp.loc(1, '12:00'), pg_temp.loc(1, '13:00'), NULL, now(), now()),
+    (1002, 'velatorio', 'Domicilio particular, Temuco', pg_temp.loc(0, '09:00'), pg_temp.loc(1, '11:00'), 'Instalación con el furgón 2.', now(), now()),
+    (1002, 'misa', 'Parroquia San Francisco, Temuco', pg_temp.loc(1, '09:30'), pg_temp.loc(1, '10:30'), NULL, now(), now()),
+    (1002, 'sepultacion', 'Cementerio General de Temuco', pg_temp.loc(1, '12:00'), pg_temp.loc(1, '13:00'), NULL, now(), now()),
     (1003, 'velatorio', 'Capilla San Francisco, Temuco', pg_temp.rel(-26), pg_temp.rel(-0.5), NULL, now(), now()),
     (1003, 'sepultacion', 'Cementerio Parque Temuco', pg_temp.rel(0.5), pg_temp.rel(1.5), NULL, now(), now()),
     (1007, 'velatorio', 'Sala Velatoria Cristo Rey, Temuco', pg_temp.loc(1, '19:00'), pg_temp.loc(2, '10:00'), NULL, now(), now()),

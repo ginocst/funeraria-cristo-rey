@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\DB;
  */
 class CrearAdministrador extends Command
 {
-    protected $signature = 'funeraria:crear-admin {email} {nombre} {rut} {--sucursal=Temuco}
+    protected $signature = 'funeraria:crear-admin {email} {nombre} {rut} {--sucursal=Sucursal Blanco}
         {--password-env= : Variable de entorno que contiene la contraseña inicial}
         {--si-no-existe : No falla si ya hay un administrador}';
 
@@ -56,7 +56,7 @@ class CrearAdministrador extends Command
             ]);
             $usuario->asignarRolBase('Administrador');
         });
-        $this->info('Administrador creado. En su primer ingreso deberá configurar la verificación en dos pasos y cambiar la contraseña.');
+        $this->info('Administrador creado. Si MFA_OBLIGATORIO está activo, deberá configurar la verificación en dos pasos en su primer ingreso. Puede cambiar su contraseña con «Olvidé mi contraseña».');
 
         return self::SUCCESS;
     }

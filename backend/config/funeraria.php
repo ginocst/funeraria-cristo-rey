@@ -68,8 +68,8 @@ return [
         'proveedores.gestionar' => ['Administrador'],
 
         'vehiculos.ver' => ['Administrador', 'Coordinador'],
-        'vehiculos.crear' => ['Administrador', 'Coordinador'],
-        'vehiculos.editar' => ['Administrador', 'Coordinador'],
+        'vehiculos.crear' => ['Administrador'],
+        'vehiculos.editar' => ['Administrador'],
         'vehiculos.eliminar' => ['Administrador'],
 
         'ausencias.ver' => ['Administrador', 'Coordinador'],
