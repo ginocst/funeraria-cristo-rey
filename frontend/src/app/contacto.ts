@@ -44,5 +44,5 @@ export const SUCURSALES: SucursalPublica[] = [SUCURSAL_BLANCO, CASA_MATRIZ];
 export const CONTACTO = {
   ...SUCURSAL_BLANCO,
   sucursales: SUCURSALES,
-  cobertura: "Temuco y alrededores",
+  cobertura: "Temuco",
 };
