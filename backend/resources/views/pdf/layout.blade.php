@@ -133,7 +133,7 @@
             <td style="width:84px"><img src="{{ $logo }}" class="logo" alt="Funeraria Cristo Rey"></td>
             <td>
                 <div class="marca">Funeraria Cristo Rey</div>
-                <div class="sub">Temuco · Región de La Araucanía</div>
+                <div class="sub">Temuco - Región de La Araucanía</div>
             </td>
             <td style="text-align:right">
                 <h1>@yield('titulo')</h1>
