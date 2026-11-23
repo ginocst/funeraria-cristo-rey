@@ -141,6 +141,10 @@ Route::middleware(['auth:sanctum', 'sesion.absoluta', 'throttle:api'])->group(fu
         Route::put('productos/{id}', [ProductoController::class, 'update'])->middleware('can:productos.editar');
         Route::post('productos/{id}/foto', [ProductoController::class, 'foto'])->middleware('can:productos.editar');
         Route::post('productos/{id}/ajuste', [ProductoController::class, 'ajustar'])->middleware('can:productos.editar');
+        Route::post('productos/{id}/merma', [ProductoController::class, 'merma'])->middleware('can:productos.editar');
+        Route::get('productos/{id}/fotos', [ProductoController::class, 'fotos'])->middleware('can:productos.ver');
+        Route::post('productos/{id}/fotos', [ProductoController::class, 'agregarFoto'])->middleware('can:productos.editar');
+        Route::delete('productos/{id}/fotos/{fotoId}', [ProductoController::class, 'quitarFoto'])->middleware('can:productos.editar');
         Route::delete('productos/{id}', [ProductoController::class, 'destroy'])->middleware('can:productos.eliminar');
         Route::post('productos/{id}/ingresos', [ProductoController::class, 'ingresar'])->middleware('can:mercaderia.ingresar');
         Route::get('movimientos-stock', [ProductoController::class, 'movimientos'])->middleware('can:productos.ver');

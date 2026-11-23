@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Modules\Inventario\Domain\Stock;
 use App\Modules\Inventario\Infrastructure\Models\MovimientoStock;
 use App\Modules\Inventario\Infrastructure\Models\Producto;
+use App\Modules\Inventario\Infrastructure\Models\ProductoFoto;
 use App\Shared\Contratos\IAuditoria;
 use App\Shared\Contratos\IEventos;
 use App\Shared\Http\CrudSimple;
@@ -17,6 +18,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Intervention\Image\Format;
 use Intervention\Image\Laravel\Facades\Image;
 
@@ -71,6 +73,9 @@ class ProductoController extends Controller
             'material' => ['nullable', 'string', 'max:60'],
             'color' => ['nullable', 'string', 'max:60'],
             'medidas' => ['nullable', 'string', 'max:80'],
+            'largo_cm' => ['nullable', 'integer', 'min:1', 'max:400'],
+            'ancho_cm' => ['nullable', 'integer', 'min:1', 'max:400'],
+            'alto_cm' => ['nullable', 'integer', 'min:1', 'max:400'],
             'descripcion' => ['nullable', 'string', 'max:2000'],
             'precio' => ['required', 'integer', 'min:0', 'max:100000000'],
             'umbral_minimo' => ['nullable', 'integer', 'min:0', 'max:1000'],
@@ -145,6 +150,24 @@ class ProductoController extends Controller
         return response()->json($producto->fresh());
     }
 
+    /** Merma: urnas o elementos que se quiebran o dañan. Salen del stock disponible y queda el movimiento con su motivo (permiso productos.editar) */
+    public function merma(Request $request, int $id): JsonResponse
+    {
+        $datos = $request->validate([
+            'cantidad' => ['required', 'integer', 'min:1', 'max:1000'],
+            'motivo' => ['required', 'string', 'min:5', 'max:250'],
+        ]);
+        $producto = DB::transaction(function () use ($id, $datos) {
+            $producto = Producto::whereKey($id)->lockForUpdate()->firstOrFail();
+            $this->moverStock($producto, -$datos['cantidad'], 'merma', $datos['motivo'], null, null);
+
+            return $producto;
+        });
+        $this->auditoria->registrar('merma_stock', 'productos', $id, null, $datos);
+
+        return response()->json($producto->fresh());
+    }
+
     public function movimientos(Request $request): JsonResponse
     {
         $q = MovimientoStock::query()
@@ -180,6 +203,42 @@ class ProductoController extends Controller
         $this->auditoria->registrar('foto_producto', 'productos', $id);
 
         return response()->json($producto->fresh());
+    }
+
+    /** Fotos del modelo para el carrusel (la principal y las adicionales) */
+    public function fotos(int $id): JsonResponse
+    {
+        return response()->json(Producto::with('fotos')->findOrFail($id)->galeria());
+    }
+
+    /** Foto adicional (vista abierta, lateral u otra): máximo 8, se recodifica igual que la principal */
+    public function agregarFoto(Request $request, int $id): JsonResponse
+    {
+        $datos = $request->validate([
+            'foto' => ['required', 'file', 'max:5120', 'mimetypes:image/jpeg,image/png,image/webp'],
+            'vista' => ['required', Rule::in(['abierta', 'lateral', 'otra'])],
+        ]);
+        $producto = Producto::findOrFail($id);
+        if ($producto->fotos()->count() >= 8) {
+            throw ValidationException::withMessages(['foto' => 'Cada modelo admite hasta 8 fotos adicionales.']);
+        }
+        $imagen = Image::decode($request->file('foto'))->scaleDown(width: 1000);
+        $ruta = Str::slug($producto->codigo) . '-' . $datos['vista'] . '-' . Str::random(8) . '.webp';
+        Storage::disk('catalogo')->put($ruta, $imagen->encodeUsingFormat(Format::WEBP, quality: 82)->toString());
+        $foto = $producto->fotos()->create(['ruta' => $ruta, 'vista' => $datos['vista'], 'orden' => (int) $producto->fotos()->max('orden') + 1]);
+        $this->auditoria->registrar('foto_producto', 'productos', $id, null, ['vista' => $datos['vista']]);
+
+        return response()->json($foto, 201);
+    }
+
+    public function quitarFoto(int $id, int $fotoId): JsonResponse
+    {
+        $foto = ProductoFoto::where('producto_id', $id)->findOrFail($fotoId);
+        $foto->delete();
+        Storage::disk('catalogo')->delete($foto->ruta);
+        $this->auditoria->registrar('quitar_foto_producto', 'productos', $id, null, ['foto_id' => $fotoId]);
+
+        return response()->json(null, 204);
     }
 
     private function moverStock(Producto $producto, int $cantidad, string $tipo, string $motivo, ?int $proveedorId, ?string $documento): void

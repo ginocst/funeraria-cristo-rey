@@ -1,3 +1,4 @@
+import type { FotoProducto } from "../api/tipos";
 import dayjs, { type Dayjs } from "dayjs";
 import "dayjs/locale/es";
 import customParseFormat from "dayjs/plugin/customParseFormat";
@@ -110,3 +111,11 @@ export function mesLargo(ym: string): string {
 export function capitalizar(t: string): string {
   return t ? t.charAt(0).toUpperCase() + t.slice(1) : t;
 }
+
+/** Nombre de cada vista de las fotos de un modelo */
+export const VISTAS_FOTO: Record<FotoProducto["vista"], string> = {
+  superior: "Vista superior",
+  abierta: "Vista abierta",
+  lateral: "Vista lateral",
+  otra: "Otra vista",
+};

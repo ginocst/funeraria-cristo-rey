@@ -15,7 +15,7 @@ use Illuminate\Validation\Rule;
  */
 class CatalogoPublicoController extends Controller
 {
-    private const CAMPOS = ['id', 'codigo', 'nombre', 'tipo', 'material', 'color', 'medidas', 'descripcion', 'precio', 'infantil', 'foto_url'];
+    private const CAMPOS = ['id', 'codigo', 'nombre', 'tipo', 'material', 'color', 'medidas', 'largo_cm', 'ancho_cm', 'alto_cm', 'descripcion', 'precio', 'infantil', 'foto_url'];
 
     public function index(Request $request): JsonResponse
     {
@@ -30,7 +30,7 @@ class CatalogoPublicoController extends Controller
             'orden' => ['nullable', Rule::in(['relevancia', 'precio_asc', 'precio_desc', 'nombre', 'recientes'])],
         ]);
 
-        $q = Producto::query()->where('publico', true);
+        $q = Producto::query()->with('fotos')->where('publico', true);
         if (! empty($f['q'])) {
             $like = '%' . addcslashes($f['q'], '%_') . '%';
             $q->where(fn($w) => $w->where('nombre', 'ilike', $like)->orWhere('codigo', 'ilike', $like)->orWhere('descripcion', 'ilike', $like));
@@ -58,7 +58,11 @@ class CatalogoPublicoController extends Controller
             default => $q->orderBy('infantil')->orderByRaw("array_position(ARRAY['ataud','urna','urna_cremacion','elemento']::varchar[], tipo::varchar)")->orderByDesc('precio'),
         };
 
-        return response()->json($q->get()->map(fn(Producto $p) => $p->only(self::CAMPOS)));
+        return response()->json($q->get()->map(fn(Producto $p) => [
+            ...$p->only(self::CAMPOS),
+            'medidas' => $p->medidasTexto(),
+            'galeria' => $p->galeria(),
+        ]));
     }
 
     /** Valores disponibles para los filtros del catálogo */

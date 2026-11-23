@@ -5,6 +5,7 @@ namespace App\Modules\Inventario\Infrastructure\Models;
 use App\Modules\Inventario\Domain\Stock;
 use App\Shared\Infrastructure\ModeloBase;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
 
 class Producto extends ModeloBase
@@ -19,6 +20,9 @@ class Producto extends ModeloBase
         'material',
         'color',
         'medidas',
+        'largo_cm',
+        'ancho_cm',
+        'alto_cm',
         'descripcion',
         'precio',
         'umbral_minimo',
@@ -35,6 +39,9 @@ class Producto extends ModeloBase
             'precio' => 'integer',
             'stock' => 'integer',
             'umbral_minimo' => 'integer',
+            'largo_cm' => 'integer',
+            'ancho_cm' => 'integer',
+            'alto_cm' => 'integer',
             'infantil' => 'boolean',
             'publico' => 'boolean',
             'atributos' => 'array'
@@ -44,6 +51,33 @@ class Producto extends ModeloBase
     public function proveedor(): BelongsTo
     {
         return $this->belongsTo(Proveedor::class);
+    }
+
+    public function fotos(): HasMany
+    {
+        return $this->hasMany(ProductoFoto::class)->orderBy('orden')->orderBy('id');
+    }
+
+    /** Medidas para mostrar: «largo × ancho × alto cm» si están cargadas; si no, el texto libre */
+    public function medidasTexto(): ?string
+    {
+        $numeros = array_filter([$this->largo_cm, $this->ancho_cm, $this->alto_cm], fn($v) => $v !== null);
+
+        return $numeros ? implode(' × ', $numeros) . ' cm' : $this->medidas;
+    }
+
+    /** Fotos para el carrusel: la principal (vista superior) y luego las adicionales, en orden */
+    public function galeria(): array
+    {
+        $galeria = [];
+        if ($this->foto_url) {
+            $galeria[] = ['id' => null, 'url' => $this->foto_url, 'vista' => 'superior'];
+        }
+        foreach ($this->fotos as $foto) {
+            $galeria[] = ['id' => $foto->id, 'url' => $foto->url, 'vista' => $foto->vista];
+        }
+
+        return $galeria;
     }
 
     public function getFotoUrlAttribute(): ?string

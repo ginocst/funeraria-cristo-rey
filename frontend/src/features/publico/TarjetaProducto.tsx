@@ -1,3 +1,5 @@
+import ChevronLeftRoundedIcon from "@mui/icons-material/ChevronLeftRounded";
+import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import {
   Box,
@@ -7,10 +9,11 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import type { ProductoPublico } from "../../api/tipos";
+import { useState } from "react";
+import type { FotoProducto, ProductoPublico } from "../../api/tipos";
 import { colores, fuenteTitulos } from "../../app/tema";
 import { TIPOS_PRODUCTO } from "../../components/Estados";
-import { pesos } from "../../lib/formato";
+import { pesos, VISTAS_FOTO } from "../../lib/formato";
 
 /** Tarjeta de un modelo del catálogo público (foto, tipo, nombre, material y precio). La usan la portada y el catálogo. */
 export function TarjetaProducto({
@@ -92,6 +95,94 @@ export function TarjetaProducto({
   );
 }
 
+/** Fotos de un modelo con navegación lateral (flechas, teclado y puntos) */
+function CarruselFotos({ producto: p }: { producto: ProductoPublico }) {
+  const fotos: FotoProducto[] = p.galeria?.length
+    ? p.galeria
+    : p.foto_url
+      ? [{ id: null, url: p.foto_url, vista: "superior" }]
+      : [];
+  const [indice, setIndice] = useState(0);
+  const total = fotos.length;
+  const actual = fotos[Math.min(indice, Math.max(total - 1, 0))];
+  const ir = (paso: number) => setIndice((i) => (i + paso + total) % total);
+
+  const flecha = (lado: "izquierda" | "derecha") => (
+    <IconButton
+      onClick={() => ir(lado === "izquierda" ? -1 : 1)}
+      aria-label={lado === "izquierda" ? "Foto anterior" : "Foto siguiente"}
+      sx={{
+        position: "absolute",
+        top: "50%",
+        transform: "translateY(-50%)",
+        [lado === "izquierda" ? "left" : "right"]: 8,
+        bgcolor: "rgba(255,255,255,0.85)",
+        "&:hover": { bgcolor: "#fff" },
+      }}
+    >
+      {lado === "izquierda" ? (
+        <ChevronLeftRoundedIcon />
+      ) : (
+        <ChevronRightRoundedIcon />
+      )}
+    </IconButton>
+  );
+
+  return (
+    <Box
+      tabIndex={total > 1 ? 0 : undefined}
+      onKeyDown={(e) => {
+        if (total < 2) return;
+        if (e.key === "ArrowLeft") ir(-1);
+        if (e.key === "ArrowRight") ir(1);
+      }}
+      sx={{
+        position: "relative",
+        bgcolor: "#F1EFF2",
+        minHeight: 280,
+        height: "100%",
+        outlineOffset: -2,
+      }}
+    >
+      {actual && (
+        <Box
+          component="img"
+          src={actual.url}
+          alt={`${p.nombre}, ${VISTAS_FOTO[actual.vista].toLowerCase()}`}
+          sx={{
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            display: "block",
+          }}
+        />
+      )}
+      {total > 1 && (
+        <>
+          {flecha("izquierda")}
+          {flecha("derecha")}
+          <Box
+            sx={{
+              position: "absolute",
+              left: 12,
+              bottom: 12,
+              px: 1.25,
+              py: 0.5,
+              borderRadius: 2,
+              bgcolor: "rgba(36,24,26,0.72)",
+              color: "#fff",
+              fontSize: "0.8rem",
+            }}
+          >
+            {VISTAS_FOTO[actual.vista]}, {Math.min(indice, total - 1) + 1} de{" "}
+            {total}
+          </Box>
+        </>
+      )}
+    </Box>
+  );
+}
+
 /** Ficha ampliada de un modelo, en un diálogo */
 export function DetalleProducto({
   producto: detalle,
@@ -110,21 +201,7 @@ export function DetalleProducto({
             gridTemplateColumns: { xs: "1fr", md: "1.2fr 1fr" },
           }}
         >
-          <Box sx={{ bgcolor: "#F1EFF2", minHeight: 280 }}>
-            {detalle.foto_url && (
-              <Box
-                component="img"
-                src={detalle.foto_url}
-                alt={detalle.nombre}
-                sx={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
-                  display: "block",
-                }}
-              />
-            )}
-          </Box>
+          <CarruselFotos key={detalle.id} producto={detalle} />
           <Box sx={{ p: 3.5, position: "relative" }}>
             <IconButton
               onClick={onClose}
@@ -167,7 +244,12 @@ export function DetalleProducto({
               {[
                 ["Material", detalle.material],
                 ["Color", detalle.color],
-                ["Medidas", detalle.medidas],
+                [
+                  detalle.largo_cm || detalle.ancho_cm || detalle.alto_cm
+                    ? "Largo × ancho × alto"
+                    : "Medidas",
+                  detalle.medidas,
+                ],
                 ["Código", detalle.codigo],
               ]
                 .filter(([, v]) => v)

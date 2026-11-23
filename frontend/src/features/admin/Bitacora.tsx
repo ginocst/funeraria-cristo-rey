@@ -38,6 +38,8 @@ const ACCIONES: Record<string, string> = {
   ajuste_stock: "Ajustó stock",
   ingreso_mercaderia: "Ingresó mercadería",
   foto_producto: "Cambió foto",
+  quitar_foto_producto: "Quitó foto",
+  merma_stock: "Registró merma",
   asociar_proveedor: "Asoció proveedor",
   desasociar_proveedor: "Desasoció proveedor",
   subir_documento: "Subió documento",

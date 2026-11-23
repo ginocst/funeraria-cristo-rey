@@ -1,4 +1,5 @@
 import AddPhotoAlternateRoundedIcon from "@mui/icons-material/AddPhotoAlternateRounded";
+import HeartBrokenRoundedIcon from "@mui/icons-material/HeartBrokenRounded";
 import MoveToInboxRoundedIcon from "@mui/icons-material/MoveToInboxRounded";
 import PublicRoundedIcon from "@mui/icons-material/PublicRounded";
 import TuneRoundedIcon from "@mui/icons-material/TuneRounded";
@@ -19,10 +20,10 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { z } from "zod";
-import { api, leerError, type Pagina } from "../../api/cliente";
+import { api, type Pagina } from "../../api/cliente";
 import type { MovimientoStock, Producto, Proveedor } from "../../api/tipos";
 import { colores } from "../../app/tema";
 import { useSesion } from "../../auth/Sesion";
@@ -34,7 +35,15 @@ import { FormularioDialogo } from "../../components/Formulario";
 import { useAvisar } from "../../components/Notificador";
 import { Seccion } from "../../components/Seccion";
 import { DosLineas, Tabla } from "../../components/Tabla";
+import { GaleriaFotos } from "./GaleriaFotos";
 import { fechaHora, pesos } from "../../lib/formato";
+
+/** Medida en centímetros: vacía (sin dato) o entre 1 y 400 */
+const medida = z
+  .union([z.number().int().min(1).max(400), z.literal("")], {
+    message: "Entre 1 y 400 cm",
+  })
+  .transform((v) => (v === "" ? null : v));
 
 const esquemaProducto = z.object({
   codigo: z.string().trim().min(2, "Indique el código").max(30),
@@ -45,6 +54,9 @@ const esquemaProducto = z.object({
     .transform((v) => (v === "" ? null : v)),
   material: z.string().max(60),
   color: z.string().max(60),
+  largo_cm: medida,
+  ancho_cm: medida,
+  alto_cm: medida,
   medidas: z.string().max(80),
   descripcion: z.string().max(2000),
   precio: z.number({ message: "Indique el precio" }).int().min(0),
@@ -68,6 +80,15 @@ const esquemaAjuste = z.object({
   motivo: z.string().trim().min(5, "Explique el motivo del ajuste").max(250),
 });
 
+const esquemaMerma = z.object({
+  cantidad: z.number({ message: "Indique la cantidad" }).int().min(1).max(1000),
+  motivo: z
+    .string()
+    .trim()
+    .min(5, "Explique qué le pasó (mínimo 5 letras)")
+    .max(250),
+});
+
 const TIPOS_MOV: Record<
   MovimientoStock["tipo"],
   { texto: string; color: string }
@@ -76,6 +97,7 @@ const TIPOS_MOV: Record<
   salida: { texto: "Salida por servicio", color: colores.vino },
   reposicion: { texto: "Reposición", color: colores.info },
   ajuste: { texto: "Ajuste", color: colores.alerta },
+  merma: { texto: "Merma por daño", color: colores.critico },
 };
 
 function Movimientos() {
@@ -210,7 +232,7 @@ export default function Inventario() {
   const criticos = params.get("criticos") === "1";
   const [ingreso, setIngreso] = useState<Producto | null>(null);
   const [ajuste, setAjuste] = useState<Producto | null>(null);
-  const archivo = useRef<HTMLInputElement>(null);
+  const [merma, setMerma] = useState<Producto | null>(null);
   const [fotoDe, setFotoDe] = useState<Producto | null>(null);
 
   const proveedores = useQuery({
@@ -237,21 +259,6 @@ export default function Inventario() {
         qc.invalidateQueries({ queryKey: [k] }),
       ),
     );
-
-  const subirFoto = async (f: File) => {
-    if (!fotoDe) return;
-    const datos = new FormData();
-    datos.append("foto", f);
-    try {
-      await api.post(`/productos/${fotoDe.id}/foto`, datos);
-      await refrescar();
-      avisar(
-        "Foto actualizada. Se publica en el catálogo si el producto es público.",
-      );
-    } catch (e) {
-      avisar(leerError(e).mensaje, "error");
-    }
-  };
 
   return (
     <>
@@ -344,6 +351,9 @@ export default function Inventario() {
             proveedor_id: "",
             material: "",
             color: "",
+            largo_cm: "",
+            ancho_cm: "",
+            alto_cm: "",
             medidas: "",
             descripcion: "",
             precio: 0,
@@ -359,6 +369,9 @@ export default function Inventario() {
             proveedor_id: p.proveedor_id ?? "",
             material: p.material ?? "",
             color: p.color ?? "",
+            largo_cm: p.largo_cm ?? "",
+            ancho_cm: p.ancho_cm ?? "",
+            alto_cm: p.alto_cm ?? "",
             medidas: p.medidas ?? "",
             descripcion: p.descripcion ?? "",
             precio: p.precio,
@@ -388,7 +401,31 @@ export default function Inventario() {
             },
             { nombre: "material", etiqueta: "Material", ancho: "tercio" },
             { nombre: "color", etiqueta: "Color", ancho: "tercio" },
-            { nombre: "medidas", etiqueta: "Medidas", ancho: "tercio" },
+            {
+              nombre: "largo_cm",
+              etiqueta: "Largo (cm)",
+              tipo: "numero",
+              ancho: "tercio",
+              ayuda: "Varía según la contextura",
+            },
+            {
+              nombre: "ancho_cm",
+              etiqueta: "Ancho (cm)",
+              tipo: "numero",
+              ancho: "tercio",
+            },
+            {
+              nombre: "alto_cm",
+              etiqueta: "Alto (cm)",
+              tipo: "numero",
+              ancho: "tercio",
+            },
+            {
+              nombre: "medidas",
+              etiqueta: "Otras medidas",
+              ancho: "tercio",
+              ayuda: "Solo si no aplica largo, ancho y alto (ej. 4 piezas)",
+            },
             {
               nombre: "precio",
               etiqueta: "Precio",
@@ -452,14 +489,22 @@ export default function Inventario() {
                 </Tooltip>
               )}
               {puede(P.productosEditar) && (
-                <Tooltip title="Cambiar foto">
+                <Tooltip title="Registrar merma (urna dañada)">
                   <IconButton
                     size="small"
-                    onClick={() => {
-                      setFotoDe(p);
-                      archivo.current?.click();
-                    }}
-                    aria-label="Cambiar foto"
+                    onClick={() => setMerma(p)}
+                    aria-label="Registrar merma"
+                  >
+                    <HeartBrokenRoundedIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              )}
+              {puede(P.productosEditar) && (
+                <Tooltip title="Fotos del modelo">
+                  <IconButton
+                    size="small"
+                    onClick={() => setFotoDe(p)}
+                    aria-label="Fotos del modelo"
                   >
                     <AddPhotoAlternateRoundedIcon fontSize="small" />
                   </IconButton>
@@ -550,16 +595,10 @@ export default function Inventario() {
         />
       )}
 
-      <input
-        ref={archivo}
-        type="file"
-        hidden
-        accept="image/jpeg,image/png,image/webp"
-        onChange={(e) => {
-          const f = e.target.files?.[0];
-          if (f) subirFoto(f);
-          e.target.value = "";
-        }}
+      <GaleriaFotos
+        producto={fotoDe}
+        alCerrar={() => setFotoDe(null)}
+        alCambiar={refrescar}
       />
 
       <FormularioDialogo
@@ -635,6 +674,33 @@ export default function Inventario() {
           await refrescar();
           avisar("Stock ajustado");
           setAjuste(null);
+        }}
+      />
+      <FormularioDialogo
+        abierto={!!merma}
+        titulo="Registrar merma"
+        descripcion={
+          merma
+            ? `${merma.nombre}. Stock actual: ${merma.stock}. Use esta opción para urnas o ataúdes que se quebraron o dañaron: salen del stock disponible y el motivo queda en el historial.`
+            : undefined
+        }
+        esquema={esquemaMerma}
+        campos={[
+          {
+            nombre: "cantidad",
+            etiqueta: "Unidades dañadas",
+            tipo: "numero",
+          },
+          { nombre: "motivo", etiqueta: "Qué ocurrió", tipo: "area" },
+        ]}
+        valoresIniciales={{ cantidad: 1, motivo: "" }}
+        textoGuardar="Registrar merma"
+        alCerrar={() => setMerma(null)}
+        alGuardar={async (d) => {
+          await api.post(`/productos/${merma!.id}/merma`, d);
+          await refrescar();
+          avisar("Merma registrada");
+          setMerma(null);
         }}
       />
     </>

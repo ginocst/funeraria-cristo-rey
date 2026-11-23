@@ -17,7 +17,7 @@ CREATE OR REPLACE FUNCTION pg_temp.rel(horas numeric) RETURNS timestamp AS $$
     SELECT (to_timestamp(round(extract(epoch FROM now() + horas * interval '1 hour') / 900) * 900) AT TIME ZONE 'UTC')::timestamp(0)
 $$ LANGUAGE sql;
 
--- Dígito verificador de un RUT
+-- Dígito verificador de un RUT (solo para que los datos demo se vean reales).
 CREATE OR REPLACE FUNCTION pg_temp.rut(n bigint) RETURNS text AS $$
     SELECT n::text || '-' || CASE r WHEN 11 THEN '0' WHEN 10 THEN 'K' ELSE r::text END
       FROM (SELECT 11 - (SUM(substr(reverse(n::text), k, 1)::int * (2 + (k - 1) % 6)) % 11) AS r
@@ -91,6 +91,12 @@ INSERT INTO productos (id, proveedor_id, codigo, nombre, tipo, material, color, 
     (13, 3, 'EL-502', 'Cubre urna de rosas', 'elemento', 'Flores naturales', 'Blanco', '150 cm', 'Manto floral de rosas blancas para la tapa.', 120000, 6, 3, false, false, NULL, '{}', now(), now()),
     (14, 4, 'EL-503', 'Libro de condolencias', 'elemento', 'Cuero sintético', 'Negro', '30 × 22 cm', 'Libro de firmas con cubierta acolchada.', 25000, 20, 5, false, false, NULL, '{}', now(), now()),
     (15, 4, 'EL-504', 'Set de cirios y candelabros', 'elemento', 'Metal y cera', 'Dorado', '4 piezas', 'Juego de cuatro candelabros con cirios para la sala.', 45000, 8, 2, false, false, NULL, '{}', now(), now());
+
+-- Largo, ancho y alto (cm) a partir del texto de medidas de cada modelo
+UPDATE productos p
+   SET largo_cm = (s.m)[1]::int, ancho_cm = (s.m)[2]::int, alto_cm = (s.m)[3]::int
+  FROM (SELECT id, regexp_match(medidas, '^\s*(\d{1,3})\s*[×xX]\s*(\d{1,3})(?:\s*[×xX]\s*(\d{1,3}))?\s*cm\s*$') AS m FROM productos WHERE medidas IS NOT NULL) s
+ WHERE s.id = p.id AND s.m IS NOT NULL;
 
 -- ---------------------------------------------------------------------
 -- Flota

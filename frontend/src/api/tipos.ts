@@ -145,6 +145,9 @@ export type Producto = {
   material: string | null;
   color: string | null;
   medidas: string | null;
+  largo_cm: number | null;
+  ancho_cm: number | null;
+  alto_cm: number | null;
   descripcion: string | null;
   precio: number;
   stock: number;
@@ -157,6 +160,13 @@ export type Producto = {
   pivot?: { cantidad: number; precio_unitario: number };
 };
 
+/** Foto de un modelo para el carrusel: la principal es la vista superior (id nulo) */
+export type FotoProducto = {
+  id: number | null;
+  url: string;
+  vista: "superior" | "abierta" | "lateral" | "otra";
+};
+
 export type ProductoPublico = Pick<
   Producto,
   | "id"
@@ -166,11 +176,14 @@ export type ProductoPublico = Pick<
   | "material"
   | "color"
   | "medidas"
+  | "largo_cm"
+  | "ancho_cm"
+  | "alto_cm"
   | "descripcion"
   | "precio"
   | "infantil"
   | "foto_url"
->;
+> & { galeria?: FotoProducto[] };
 
 export type Vehiculo = {
   id: number;
@@ -346,7 +359,7 @@ export type MovimientoStock = {
   id: number;
   producto_id: number;
   solicitud_id: number | null;
-  tipo: "ingreso" | "salida" | "reposicion" | "ajuste";
+  tipo: "ingreso" | "salida" | "reposicion" | "ajuste" | "merma";
   cantidad: number;
   stock_resultante: number;
   motivo: string;
