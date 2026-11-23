@@ -51,7 +51,7 @@ export function MarcoAcceso({
             sx={{ mt: 2, color: "rgba(255,255,255,0.7)", maxWidth: 400 }}
           >
             Sistema de gestión de servicios funerarios, inventario, flota y
-            finanzas. Temuco y Padre Las Casas.
+            finanzas.
           </Typography>
         </Box>
       </Box>
