@@ -234,7 +234,8 @@ const enrutador = createBrowserRouter([
       },
     ],
   },
-  // Cualquier otra dirección va a la portada
+  // Cualquier otra dirección va a la portada (fuera del grupo protegido,
+  // para que no pase primero por el control de sesión y termine en /ingresar)
   { path: "*", element: <Navigate to="/" replace /> },
 ]);
 
