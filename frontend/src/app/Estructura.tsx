@@ -200,7 +200,6 @@ function MenuUsuario() {
           </Typography>
           <Typography variant="caption" color="text.secondary">
             {sesion.rol}
-            {sesion.sucursal ? `, ${sesion.sucursal.nombre}` : ""}
           </Typography>
         </Box>
       </Box>
