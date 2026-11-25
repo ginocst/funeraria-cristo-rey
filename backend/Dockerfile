@@ -12,7 +12,7 @@ COPY . .
 RUN composer dump-autoload --optimize --classmap-authoritative --no-dev
 
 # ---------- 2. Imagen de ejecución ----------
-FROM php:8.3-fpm-alpine AS app
+FROM php:8.4-fpm-alpine AS app
 
 RUN apk add --no-cache nginx supervisor libpq libpng libjpeg-turbo libwebp freetype icu-libs libzip \
  && apk add --no-cache --virtual .build-deps $PHPIZE_DEPS postgresql-dev libpng-dev libjpeg-turbo-dev libwebp-dev freetype-dev icu-dev libzip-dev linux-headers \
