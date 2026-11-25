@@ -12,11 +12,9 @@ class Ausencia extends ModeloBase
 
     protected $fillable = ['usuario_id', 'tipo', 'desde', 'hasta', 'motivo'];
 
-    protected function casts(): array
-    {
-        return ['desde' => 'date:Y-m-d', 'hasta' => 'date:Y-m-d'];
-    }
+    protected $casts = ['desde' => 'date:Y-m-d', 'hasta' => 'date:Y-m-d'];
 
+    /** @return BelongsTo<Usuario, $this> */
     public function usuario(): BelongsTo
     {
         return $this->belongsTo(Usuario::class);

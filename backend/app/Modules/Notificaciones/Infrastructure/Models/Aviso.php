@@ -13,8 +13,5 @@ class Aviso extends Model
 
     protected $hidden = ['created_by', 'updated_by', 'deleted_at'];
 
-    protected function casts(): array
-    {
-        return ['leido_at' => 'datetime'];
-    }
+    protected $casts = ['leido_at' => 'datetime'];
 }

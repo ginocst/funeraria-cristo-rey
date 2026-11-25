@@ -38,38 +38,40 @@ class Solicitud extends ModeloBase
 
     protected $appends = ['total'];
 
-    protected function casts(): array
-    {
-        return [
-            'estado' => EstadoSolicitud::class,
-            'valor_servicio' => 'integer',
-            'descuento' => 'integer',
-            'velatorio_inicio' => 'datetime',
-            'traslado_at' => 'datetime',
-            'evaluada_at' => 'datetime',
-        ];
-    }
+    protected $casts = [
+        'estado' => EstadoSolicitud::class,
+        'valor_servicio' => 'integer',
+        'descuento' => 'integer',
+        'velatorio_inicio' => 'datetime',
+        'traslado_at' => 'datetime',
+        'evaluada_at' => 'datetime',
+    ];
 
+    /** @return BelongsTo<Expediente, $this> */
     public function expediente(): BelongsTo
     {
         return $this->belongsTo(Expediente::class);
     }
 
+    /** @return BelongsTo<Sucursal, $this> */
     public function sucursal(): BelongsTo
     {
         return $this->belongsTo(Sucursal::class);
     }
 
+    /** @return BelongsTo<Usuario, $this> */
     public function evaluador(): BelongsTo
     {
         return $this->belongsTo(Usuario::class, 'evaluada_por');
     }
 
+    /** @return BelongsToMany<Producto, $this> */
     public function productos(): BelongsToMany
     {
         return $this->belongsToMany(Producto::class, 'producto_solicitud')->withPivot(['cantidad', 'precio_unitario'])->wherePivotNull('deleted_at');
     }
 
+    /** @return HasOne<Asignacion, $this> */
     public function asignacion(): HasOne
     {
         return $this->hasOne(Asignacion::class);

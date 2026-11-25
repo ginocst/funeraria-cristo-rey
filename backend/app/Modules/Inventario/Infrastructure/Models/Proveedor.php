@@ -11,11 +11,9 @@ class Proveedor extends ModeloBase
 
     protected $fillable = ['nombre', 'rut', 'rubro', 'contacto', 'telefono', 'email', 'direccion', 'notas', 'activo'];
 
-    protected function casts(): array
-    {
-        return ['activo' => 'boolean'];
-    }
+    protected $casts = ['activo' => 'boolean'];
 
+    /** @return HasMany<Producto, $this> */
     public function productos(): HasMany
     {
         return $this->hasMany(Producto::class);

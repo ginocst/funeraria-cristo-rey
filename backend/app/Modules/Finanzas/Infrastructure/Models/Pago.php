@@ -19,26 +19,27 @@ class Pago extends Model
 
     protected $hidden = ['updated_by', 'deleted_at'];
 
-    protected function casts(): array
-    {
-        return ['monto' => 'integer', 'fecha' => 'datetime'];
-    }
+    protected $casts = ['monto' => 'integer', 'fecha' => 'datetime'];
 
+    /** @return BelongsTo<MedioPago, $this> */
     public function medioPago(): BelongsTo
     {
         return $this->belongsTo(MedioPago::class);
     }
 
+    /** @return HasOne<Comprobante, $this> */
     public function comprobante(): HasOne
     {
         return $this->hasOne(Comprobante::class);
     }
 
+    /** @return HasOne<Pago, $this> */
     public function anulacion(): HasOne
     {
         return $this->hasOne(Pago::class, 'anula_pago_id');
     }
 
+    /** @return BelongsTo<Usuario, $this> */
     public function registradoPor(): BelongsTo
     {
         return $this->belongsTo(Usuario::class, 'created_by');

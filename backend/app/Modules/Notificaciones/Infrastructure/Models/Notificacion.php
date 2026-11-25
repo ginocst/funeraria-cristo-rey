@@ -11,8 +11,5 @@ class Notificacion extends Model
 
     protected $fillable = ['evento', 'payload', 'estado', 'reintentos', 'error', 'procesado_at', 'created_by'];
 
-    protected function casts(): array
-    {
-        return ['payload' => 'array', 'procesado_at' => 'datetime'];
-    }
+    protected $casts = ['payload' => 'array', 'procesado_at' => 'datetime'];
 }

@@ -13,11 +13,13 @@ class Cliente extends ModeloBase
 
     protected $fillable = ['rut', 'nombre', 'telefono', 'email', 'direccion', 'comuna'];
 
+    /** @return BelongsToMany<Convenio, $this> */
     public function convenios(): BelongsToMany
     {
         return $this->belongsToMany(Convenio::class, 'cliente_convenio')->withPivot('numero_socio')->wherePivotNull('deleted_at');
     }
 
+    /** @return HasMany<Expediente, $this> */
     public function expedientes(): HasMany
     {
         return $this->hasMany(Expediente::class);

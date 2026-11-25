@@ -13,11 +13,9 @@ class Convenio extends ModeloBase
 
     protected $appends = ['vigente'];
 
-    protected function casts(): array
-    {
-        return ['vigencia_desde' => 'date:Y-m-d', 'vigencia_hasta' => 'date:Y-m-d', 'activo' => 'boolean', 'descuento_pct' => 'float'];
-    }
+    protected $casts = ['vigencia_desde' => 'date:Y-m-d', 'vigencia_hasta' => 'date:Y-m-d', 'activo' => 'boolean', 'descuento_pct' => 'float'];
 
+    /** @return BelongsToMany<Cliente, $this> */
     public function clientes(): BelongsToMany
     {
         return $this->belongsToMany(Cliente::class, 'cliente_convenio')->wherePivotNull('deleted_at');

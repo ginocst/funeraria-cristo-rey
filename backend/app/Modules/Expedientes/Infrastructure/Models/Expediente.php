@@ -17,36 +17,43 @@ class Expediente extends ModeloBase
 
     protected $fillable = ['cliente_id', 'sucursal_id', 'difunto_id', 'convenio_id', 'estado', 'observaciones'];
 
+    /** @return BelongsTo<Cliente, $this> */
     public function cliente(): BelongsTo
     {
         return $this->belongsTo(Cliente::class);
     }
 
+    /** @return BelongsTo<Difunto, $this> */
     public function difunto(): BelongsTo
     {
         return $this->belongsTo(Difunto::class);
     }
 
+    /** @return BelongsTo<Sucursal, $this> */
     public function sucursal(): BelongsTo
     {
         return $this->belongsTo(Sucursal::class);
     }
 
+    /** @return BelongsTo<Convenio, $this> */
     public function convenio(): BelongsTo
     {
         return $this->belongsTo(Convenio::class);
     }
 
+    /** @return HasMany<Actividad, $this> */
     public function actividades(): HasMany
     {
         return $this->hasMany(Actividad::class)->orderBy('inicio');
     }
 
+    /** @return HasMany<Solicitud, $this> */
     public function solicitudes(): HasMany
     {
         return $this->hasMany(Solicitud::class)->orderByDesc('id');
     }
 
+    /** @return HasMany<Archivo, $this> */
     public function documentos(): HasMany
     {
         return $this->hasMany(Archivo::class);

@@ -10,6 +10,9 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Support\Facades\DB;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 
+/**
+ * @property-read object{funcion: string} $pivot Pivot asignacion_usuario (solo al cargar vía Asignacion::equipo)
+ */
 class Usuario extends Authenticatable
 {
     use SoftDeletes;
@@ -25,21 +28,20 @@ class Usuario extends Authenticatable
     /** @var array<int, array{nombre:string, temporal:bool, vigencia_hasta:?string}>|null */
     private ?array $rolesVigentesCache = null;
 
-    protected function casts(): array
-    {
-        return [
-            'password' => 'hashed',
-            'activo' => 'boolean',
-            'two_factor_confirmed_at' => 'datetime',
-            'ultimo_acceso_at' => 'datetime',
-        ];
-    }
+    protected $casts = [
+        'password' => 'hashed',
+        'activo' => 'boolean',
+        'two_factor_confirmed_at' => 'datetime',
+        'ultimo_acceso_at' => 'datetime',
+    ];
 
+    /** @return BelongsTo<Sucursal, $this> */
     public function sucursal(): BelongsTo
     {
         return $this->belongsTo(Sucursal::class);
     }
 
+    /** @return BelongsToMany<Rol, $this> */
     public function roles(): BelongsToMany
     {
         return $this->belongsToMany(Rol::class, 'rol_usuario')

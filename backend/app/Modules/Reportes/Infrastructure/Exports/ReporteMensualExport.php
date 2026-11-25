@@ -4,9 +4,10 @@ namespace App\Modules\Reportes\Infrastructure\Exports;
 
 use App\Shared\Infrastructure\HoraLocal;
 use Carbon\CarbonImmutable;
+use Maatwebsite\Excel\Concerns\Export;
 use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 
-class ReporteMensualExport implements WithMultipleSheets
+class ReporteMensualExport implements Export, WithMultipleSheets
 {
     public function __construct(private array $datos) {}
 

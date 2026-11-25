@@ -13,16 +13,15 @@ class Gasto extends ModeloBase
 
     protected $fillable = ['sucursal_id', 'proveedor_id', 'categoria', 'descripcion', 'monto', 'fecha'];
 
-    protected function casts(): array
-    {
-        return ['monto' => 'integer', 'fecha' => 'date:Y-m-d'];
-    }
+    protected $casts = ['monto' => 'integer', 'fecha' => 'date:Y-m-d'];
 
+    /** @return BelongsTo<Sucursal, $this> */
     public function sucursal(): BelongsTo
     {
         return $this->belongsTo(Sucursal::class);
     }
 
+    /** @return BelongsTo<Proveedor, $this> */
     public function proveedor(): BelongsTo
     {
         return $this->belongsTo(Proveedor::class);

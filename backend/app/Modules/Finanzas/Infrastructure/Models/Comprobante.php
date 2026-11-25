@@ -14,11 +14,9 @@ class Comprobante extends Model
 
     protected $fillable = ['pago_id'];
 
-    protected function casts(): array
-    {
-        return ['emitido_at' => 'datetime'];
-    }
+    protected $casts = ['emitido_at' => 'datetime'];
 
+    /** @return BelongsTo<Pago, $this> */
     public function pago(): BelongsTo
     {
         return $this->belongsTo(Pago::class);

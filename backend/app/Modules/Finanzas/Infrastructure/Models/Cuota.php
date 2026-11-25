@@ -10,8 +10,5 @@ class Cuota extends ModeloBase
 
     protected $fillable = ['expediente_id', 'numero', 'monto', 'vencimiento'];
 
-    protected function casts(): array
-    {
-        return ['monto' => 'integer', 'vencimiento' => 'date:Y-m-d'];
-    }
+    protected $casts = ['monto' => 'integer', 'vencimiento' => 'date:Y-m-d'];
 }

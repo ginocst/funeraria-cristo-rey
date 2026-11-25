@@ -10,8 +10,5 @@ class Vehiculo extends ModeloBase
 
     protected $fillable = ['nombre', 'tipo', 'patente', 'marca', 'modelo', 'anio', 'origen', 'proveedor_externo', 'activo', 'notas'];
 
-    protected function casts(): array
-    {
-        return ['activo' => 'boolean', 'anio' => 'integer'];
-    }
+    protected $casts = ['activo' => 'boolean', 'anio' => 'integer'];
 }

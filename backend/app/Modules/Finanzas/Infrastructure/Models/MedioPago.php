@@ -10,8 +10,5 @@ class MedioPago extends ModeloBase
 
     protected $fillable = ['nombre', 'requiere_referencia', 'activo'];
 
-    protected function casts(): array
-    {
-        return ['requiere_referencia' => 'boolean', 'activo' => 'boolean'];
-    }
+    protected $casts = ['requiere_referencia' => 'boolean', 'activo' => 'boolean'];
 }

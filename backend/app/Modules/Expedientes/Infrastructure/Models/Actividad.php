@@ -10,8 +10,5 @@ class Actividad extends ModeloBase
 
     protected $fillable = ['expediente_id', 'tipo', 'lugar', 'inicio', 'fin', 'notas'];
 
-    protected function casts(): array
-    {
-        return ['inicio' => 'datetime', 'fin' => 'datetime'];
-    }
+    protected $casts = ['inicio' => 'datetime', 'fin' => 'datetime'];
 }

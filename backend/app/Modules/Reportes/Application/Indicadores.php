@@ -3,7 +3,6 @@
 namespace App\Modules\Reportes\Application;
 
 use App\Shared\Infrastructure\HoraLocal;
-use App\Shared\Infrastructure\Parametros;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 
@@ -13,8 +12,6 @@ use Illuminate\Support\Facades\DB;
  */
 class Indicadores
 {
-    public function __construct(private Parametros $parametros) {}
-
     public function panel(bool $conMontos): array
     {
         $zona = HoraLocal::zona();

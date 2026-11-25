@@ -8,6 +8,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
 
+/**
+ * @property-read object{cantidad: int, precio_unitario: int} $pivot Pivot producto_solicitud (solo al cargar vía Solicitud::productos)
+ */
 class Producto extends ModeloBase
 {
     protected $table = 'productos';
@@ -33,26 +36,25 @@ class Producto extends ModeloBase
 
     protected $appends = ['foto_url', 'critico'];
 
-    protected function casts(): array
-    {
-        return [
-            'precio' => 'integer',
-            'stock' => 'integer',
-            'umbral_minimo' => 'integer',
-            'largo_cm' => 'integer',
-            'ancho_cm' => 'integer',
-            'alto_cm' => 'integer',
-            'infantil' => 'boolean',
-            'publico' => 'boolean',
-            'atributos' => 'array'
-        ];
-    }
+    protected $casts = [
+        'precio' => 'integer',
+        'stock' => 'integer',
+        'umbral_minimo' => 'integer',
+        'largo_cm' => 'integer',
+        'ancho_cm' => 'integer',
+        'alto_cm' => 'integer',
+        'infantil' => 'boolean',
+        'publico' => 'boolean',
+        'atributos' => 'array'
+    ];
 
+    /** @return BelongsTo<Proveedor, $this> */
     public function proveedor(): BelongsTo
     {
         return $this->belongsTo(Proveedor::class);
     }
 
+    /** @return HasMany<ProductoFoto, $this> */
     public function fotos(): HasMany
     {
         return $this->hasMany(ProductoFoto::class)->orderBy('orden')->orderBy('id');

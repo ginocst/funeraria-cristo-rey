@@ -13,8 +13,5 @@ class Auditoria extends Model
 
     protected $guarded = ['id'];
 
-    protected function casts(): array
-    {
-        return ['antes' => 'array', 'despues' => 'array', 'fecha_utc' => 'datetime'];
-    }
+    protected $casts = ['antes' => 'array', 'despues' => 'array', 'fecha_utc' => 'datetime'];
 }

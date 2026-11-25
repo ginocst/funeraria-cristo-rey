@@ -17,21 +17,21 @@ class Asignacion extends ModeloBase
 
     protected $hidden = ['intervalo', 'created_by', 'updated_by', 'deleted_at'];
 
-    protected function casts(): array
-    {
-        return ['inicio' => 'datetime', 'fin' => 'datetime', 'activa' => 'boolean', 'externo' => 'boolean'];
-    }
+    protected $casts = ['inicio' => 'datetime', 'fin' => 'datetime', 'activa' => 'boolean', 'externo' => 'boolean'];
 
+    /** @return BelongsTo<Vehiculo, $this> */
     public function vehiculo(): BelongsTo
     {
         return $this->belongsTo(Vehiculo::class);
     }
 
+    /** @return BelongsTo<Solicitud, $this> */
     public function solicitud(): BelongsTo
     {
         return $this->belongsTo(Solicitud::class);
     }
 
+    /** @return BelongsToMany<Usuario, $this> */
     public function equipo(): BelongsToMany
     {
         return $this->belongsToMany(Usuario::class, 'asignacion_usuario')->withPivot('funcion')->wherePivotNull('deleted_at');
