@@ -1,0 +1,48 @@
+# Entorno local completo: PostgreSQL + API + interfaz con recarga autom. cada vez que se guarda un cambio
+# Uso: docker compose up --build   →  interfaz en http://localhost:5173, API en http://localhost:8000
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: funeraria
+      POSTGRES_USER: funeraria
+      POSTGRES_PASSWORD: funeraria
+      TZ: UTC
+    ports: ["5433:5432"]   # el 5432 suele estar ocupado por PostgreSQL local
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U funeraria -d funeraria"]
+      interval: 5s
+      retries: 10
+
+  api:
+    build: ./backend
+    env_file: ./backend/.env
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      APP_ENV: local
+      APP_DEBUG: "true"
+      RUN_MIGRATIONS: "true"
+    ports: ["8000:8080"]
+    depends_on:
+      db: { condition: service_healthy }
+    volumes:
+      - archivos:/var/www/html/storage/app
+
+  web:
+    image: node:22-alpine
+    working_dir: /app
+    command: sh -c "npm ci && npm run dev -- --host 0.0.0.0"
+    environment:
+      # La interfaz llama a /api en su mismo origen y Vite lo redirige al contenedor de la API.
+      VITE_PROXY_TARGET: http://api:8080
+    ports: ["5173:5173"]
+    volumes:
+      - ./frontend:/app:z   # :z permite el acceso con SELinux (Fedora); en otros sistemas no tiene efecto
+      - /app/node_modules
+    depends_on: [api]
+
+volumes:
+  pgdata:
+  archivos:

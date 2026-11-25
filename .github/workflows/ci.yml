@@ -1,0 +1,84 @@
+# Integración continua: cada push y pull request ejecuta calidad, pruebas y auditoría.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: funeraria_test
+          POSTGRES_USER: funeraria
+          POSTGRES_PASSWORD: funeraria
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U funeraria" --health-interval 5s --health-retries 10
+    env:
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_USERNAME: funeraria
+      DB_PASSWORD: funeraria
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          extensions: pdo_pgsql, gd, intl, zip, bcmath
+          coverage: none
+      - name: Instalar dependencias
+        run: composer install --no-interaction --prefer-dist --no-progress
+      - name: Estilo (Pint)
+        run: vendor/bin/pint --test
+      - name: Análisis estático (Larastan)
+        run: vendor/bin/phpstan analyse --memory-limit=1G --no-progress
+      - name: Pruebas (Pest) contra PostgreSQL
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+          vendor/bin/pest --colors=always
+      - name: Auditoría de dependencias
+        run: composer audit
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - name: Tipos y lint
+        run: npm run lint
+      - name: Pruebas (Vitest)
+        run: npm test
+      - name: Compilación
+        run: npm run build
+      - name: Auditoría de dependencias
+        run: npm audit --audit-level=high --omit=dev
+
+  secretos:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

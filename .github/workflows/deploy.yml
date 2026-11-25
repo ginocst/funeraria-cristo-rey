@@ -1,0 +1,85 @@
+# Despliegue continuo a AWS cuando CI termina bien en main.
+# API: imagen Docker en Amazon ECR, ejecutada por Amazon ECS Express Mode (Fargate + ALB).
+# Interfaz: archivos estáticos en S3, servidos por CloudFront.
+# Requiere un rol IAM con OIDC para GitHub (sin llaves de acceso guardadas) y
+# las variables del repositorio indicadas abajo (Settings → Secrets and variables → Actions → Variables).
+name: Deploy
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  id-token: write # OIDC hacia AWS
+  contents: read
+
+env:
+  AWS_REGION: ${{ vars.AWS_REGION }}  # ej. us-east-1
+  ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}  # ej. funeraria-api
+  ECS_SERVICE_ARN: ${{ vars.ECS_SERVICE_ARN }}  # ARN del servicio Express
+  FRONTEND_BUCKET: ${{ vars.FRONTEND_BUCKET }}  # bucket del frontend
+  CLOUDFRONT_DISTRIBUTION_ID: ${{ vars.CLOUDFRONT_DISTRIBUTION_ID }}
+
+jobs:
+  api:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    environment: produccion
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      - id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+      - name: Construir y publicar la imagen
+        id: imagen
+        env:
+          REGISTRO: ${{ steps.ecr.outputs.registry }}
+        run: |
+          IMAGEN="$REGISTRO/$ECR_REPOSITORY:${GITHUB_SHA::7}"
+          docker build -t "$IMAGEN" backend
+          docker push "$IMAGEN"
+          echo "imagen=$IMAGEN" >> "$GITHUB_OUTPUT"
+      - name: Desplegar la nueva imagen en ECS Express Mode
+        env:
+          IMAGEN: ${{ steps.imagen.outputs.imagen }}
+          CONTENEDOR: ${{ vars.ECS_CONTENEDOR_JSON }} # infra/ecs/contenedor.json
+        run: |
+          # Se envía la definición completa del contenedor (variables y secretos) con la imagen nueva.
+          echo "$CONTENEDOR" | jq --arg img "$IMAGEN" '.image = $img' > contenedor.json
+          aws ecs update-express-gateway-service \
+            --service-arn "$ECS_SERVICE_ARN" \
+            --primary-container file://contenedor.json
+          aws ecs wait services-stable --cluster default --services "$ECS_SERVICE_ARN"
+
+  frontend:
+    needs: api
+    runs-on: ubuntu-latest
+    environment: produccion
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      - name: Compilar
+        working-directory: frontend
+        # VITE_API_URL vacío: la interfaz llama a /api en su mismo dominio y CloudFront lo envía a la API
+        run: npm ci && npm run build
+      - name: Publicar en S3 (sin tocar las fotos del catálogo)
+        run: |
+          aws s3 sync frontend/dist "s3://$FRONTEND_BUCKET" --delete --exclude "catalogo/*" --exclude "index.html" \
+            --cache-control "public,max-age=31536000,immutable"
+          aws s3 cp frontend/dist/index.html "s3://$FRONTEND_BUCKET/index.html" --cache-control "no-cache"
+      - name: Invalidar CloudFront
+        run: aws cloudfront create-invalidation --distribution-id "$CLOUDFRONT_DISTRIBUTION_ID" --paths "/index.html" "/"
