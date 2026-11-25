@@ -49,8 +49,8 @@ class ClienteController extends Controller
                 'required',
                 'string',
                 'max:12',
-                fn($a, $v, $f) => Rut::formatoValido($v) ? null : $f('El RUT debe tener el formato 12345678-9.'),
-                Rule::unique('clientes', 'rut')->ignore($registro?->id)->whereNull('deleted_at')
+                fn ($a, $v, $f) => Rut::formatoValido($v) ? null : $f('El RUT debe tener el formato 12345678-9.'),
+                Rule::unique('clientes', 'rut')->ignore($registro?->id)->whereNull('deleted_at'),
             ],
             'nombre' => ['required', 'string', 'max:160'],
             'telefono' => ['nullable', 'string', 'max:30'],
@@ -101,7 +101,7 @@ class ClienteController extends Controller
         if (! $request->has('convenios')) {
             return;
         }
-        $ids = collect($request->input('convenios', []))->map(fn($v) => (int) $v)->unique();
+        $ids = collect($request->input('convenios', []))->map(fn ($v) => (int) $v)->unique();
         DB::table('cliente_convenio')->where('cliente_id', $clienteId)->whereNotIn('convenio_id', $ids)->update(['deleted_at' => now()]);
         foreach ($ids as $convenioId) {
             DB::table('cliente_convenio')->updateOrInsert(['cliente_id' => $clienteId, 'convenio_id' => $convenioId], ['deleted_at' => null, 'updated_at' => now(), 'created_at' => now()]);

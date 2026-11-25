@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Tests\Feature\Escenario;
 
@@ -34,6 +35,6 @@ it('registra el abono con comprobante y lo anula con un movimiento compensatorio
 it('la base rechaza editar un pago (libro inmutable)', function () {
     $exp = Escenario::expediente($this->base['sucursal']);
     Escenario::pagar($exp, 1000);
-    expect(fn() => DB::table('pagos')->where('expediente_id', $exp)->update(['monto' => 1]))
-        ->toThrow(Illuminate\Database\QueryException::class);
+    expect(fn () => DB::table('pagos')->where('expediente_id', $exp)->update(['monto' => 1]))
+        ->toThrow(QueryException::class);
 });

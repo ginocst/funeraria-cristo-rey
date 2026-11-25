@@ -37,15 +37,15 @@ class DisponibilidadController extends Controller
             ->where('au.activa', true)->whereNull('au.deleted_at')->where('au.inicio', '<', $fin)->where('au.fin', '>', $inicio)
             ->where('a.solicitud_id', '!=', $excluir)->pluck('au.usuario_id')->all();
 
-        $operarios = Usuario::where('activo', true)->orderBy('nombre')->get()->filter(fn(Usuario $u) => $u->rolPrincipal() === 'Operario')->values();
+        $operarios = Usuario::where('activo', true)->orderBy('nombre')->get()->filter(fn (Usuario $u) => $u->rolPrincipal() === 'Operario')->values();
         $ausentes = $disponibilidad->operariosAusentes($operarios->pluck('id')->all(), $inicio, $fin);
 
         return response()->json([
             'inicio' => $inicio,
             'fin' => $fin,
             'vehiculos' => Vehiculo::where('activo', true)->orderBy('origen')->orderBy('nombre')->get(['id', 'nombre', 'tipo', 'patente', 'origen', 'proveedor_externo'])
-                ->map(fn($v) => [...$v->toArray(), 'ocupado' => $v->origen === 'propio' && in_array($v->id, $vehiculosOcupados)]),
-            'operarios' => $operarios->map(fn(Usuario $u) => [
+                ->map(fn ($v) => [...$v->toArray(), 'ocupado' => $v->origen === 'propio' && in_array($v->id, $vehiculosOcupados)]),
+            'operarios' => $operarios->map(fn (Usuario $u) => [
                 'id' => $u->id,
                 'nombre' => $u->nombre,
                 'ocupado' => in_array($u->id, $personalOcupado),

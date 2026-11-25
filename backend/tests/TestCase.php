@@ -19,9 +19,9 @@ abstract class TestCase extends BaseTestCase
         $sucursal = Sucursal::firstOrCreate(['nombre' => 'Temuco']);
         static $correlativo = 10_000_000;
         $usuario = Usuario::create([
-            'nombre' => $rol . ' de prueba',
-            'rut' => ++$correlativo . '-9',
-            'email' => strtolower($rol) . uniqid() . '@prueba.test',
+            'nombre' => $rol.' de prueba',
+            'rut' => ++$correlativo.'-9',
+            'email' => strtolower($rol).uniqid().'@prueba.test',
             'password' => 'Clave-Segura-2026',
             'sucursal_id' => $sucursal->id,
             'activo' => true,

@@ -17,7 +17,7 @@ class TrabajarOutbox extends Command
         do {
             $procesados = $procesar->lote();
             if ($procesados > 0) {
-                $this->info(now()->toDateTimeString() . ": $procesados eventos procesados");
+                $this->info(now()->toDateTimeString().": $procesados eventos procesados");
             }
             if ($this->option('una-vez')) {
                 break;

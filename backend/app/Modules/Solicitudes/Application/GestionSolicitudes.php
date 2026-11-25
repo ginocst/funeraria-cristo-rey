@@ -94,7 +94,7 @@ class GestionSolicitudes
             $this->eventos->publicar('solicitud.modificada', [
                 'solicitud_id' => $solicitud->id,
                 'codigo' => $solicitud->expediente->codigo,
-                'equipo' => array_values(array_unique([...$equipoAnterior, ...$this->equipoIds($solicitud->id)]))
+                'equipo' => array_values(array_unique([...$equipoAnterior, ...$this->equipoIds($solicitud->id)])),
             ]);
 
             return $solicitud;
@@ -117,8 +117,8 @@ class GestionSolicitudes
             $porcentaje = $this->parametros->entero('abono_minimo_pct');
             if (! PoliticaReserva::abonoMinimoCumplido($resumen['total'], $resumen['pagado'], $porcentaje)) {
                 $minimo = PoliticaReserva::abonoMinimoRequerido($resumen['total'], $porcentaje);
-                throw new ReglaNegocioException('Falta el abono mínimo: se requieren $' . number_format($minimo, 0, ',', '.')
-                    . ' (' . $porcentaje . ' %) y hay $' . number_format($resumen['pagado'], 0, ',', '.') . ' pagados.', 'abono_minimo');
+                throw new ReglaNegocioException('Falta el abono mínimo: se requieren $'.number_format($minimo, 0, ',', '.')
+                    .' ('.$porcentaje.' %) y hay $'.number_format($resumen['pagado'], 0, ',', '.').' pagados.', 'abono_minimo');
             }
 
             $this->stock->reservar($solicitud->id, $solicitud->itemsProductos());

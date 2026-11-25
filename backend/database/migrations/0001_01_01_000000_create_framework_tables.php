@@ -5,7 +5,8 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /** Tablas que usa Laravel: sesiones en PostgreSQL, caché, bloqueos, colas y recuperación de contraseña. */
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         Schema::create('password_reset_tokens', function (Blueprint $table) {

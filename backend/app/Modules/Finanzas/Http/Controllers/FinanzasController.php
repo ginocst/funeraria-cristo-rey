@@ -32,7 +32,7 @@ class FinanzasController extends Controller
 
         return response()->json([
             'resumen' => [...$resumen, 'abono_minimo' => PoliticaReserva::abonoMinimoRequerido($resumen['total'], $pct), 'abono_minimo_pct' => $pct],
-            'pagos' => $pagos->map(fn(Pago $p) => [...$p->toArray(), 'anulado' => in_array($p->id, $anulados, true)]),
+            'pagos' => $pagos->map(fn (Pago $p) => [...$p->toArray(), 'anulado' => in_array($p->id, $anulados, true)]),
             'cuotas' => $this->cuotasConEstado($expedienteId),
         ]);
     }

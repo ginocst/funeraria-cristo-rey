@@ -44,7 +44,7 @@ return [
         ] : [
             'driver' => 'local',
             'root' => storage_path('app/public/catalogo'),
-            'url' => rtrim(env('APP_URL'), '/') . '/storage/catalogo',
+            'url' => rtrim(env('APP_URL'), '/').'/storage/catalogo',
             'visibility' => 'public',
             'throw' => true,
         ],

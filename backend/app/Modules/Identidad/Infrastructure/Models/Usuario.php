@@ -60,9 +60,9 @@ class Usuario extends Authenticatable
             ->join('roles', 'roles.id', '=', 'rol_usuario.rol_id')
             ->where('rol_usuario.usuario_id', $this->id)
             ->whereNull('rol_usuario.deleted_at')
-            ->where(fn($q) => $q->whereNull('rol_usuario.vigencia_hasta')->orWhere('rol_usuario.vigencia_hasta', '>', now()))
+            ->where(fn ($q) => $q->whereNull('rol_usuario.vigencia_hasta')->orWhere('rol_usuario.vigencia_hasta', '>', now()))
             ->get(['roles.nombre', 'rol_usuario.vigencia_hasta'])
-            ->map(fn($r) => ['nombre' => $r->nombre, 'temporal' => $r->vigencia_hasta !== null, 'vigencia_hasta' => $r->vigencia_hasta])
+            ->map(fn ($r) => ['nombre' => $r->nombre, 'temporal' => $r->vigencia_hasta !== null, 'vigencia_hasta' => $r->vigencia_hasta])
             ->all();
     }
 
@@ -116,7 +116,7 @@ class Usuario extends Authenticatable
     public function permisos(): array
     {
         return collect(array_keys(config('funeraria.permisos', [])))
-            ->filter(fn($p) => $this->tienePermiso($p))
+            ->filter(fn ($p) => $this->tienePermiso($p))
             ->values()
             ->all();
     }

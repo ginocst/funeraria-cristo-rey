@@ -24,11 +24,11 @@ class FortifyServiceProvider extends ServiceProvider
 
         // Límite progresivo desde el quinto intento: 5 por minuto y 20 por hora por cuenta e IP
         RateLimiter::for('login', function (Request $request) {
-            $clave = Str::transliterate(Str::lower((string) $request->input(Fortify::username())) . '|' . $request->ip());
+            $clave = Str::transliterate(Str::lower((string) $request->input(Fortify::username())).'|'.$request->ip());
 
             return [Limit::perMinute(5)->by($clave), Limit::perHour(20)->by($clave)];
         });
 
-        RateLimiter::for('two-factor', fn(Request $request) => Limit::perMinute(5)->by($request->session()->get('login.id')));
+        RateLimiter::for('two-factor', fn (Request $request) => Limit::perMinute(5)->by($request->session()->get('login.id')));
     }
 }

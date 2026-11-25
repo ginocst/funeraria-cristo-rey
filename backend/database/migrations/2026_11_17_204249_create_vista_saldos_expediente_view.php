@@ -3,10 +3,11 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
-        // Saldos por expediente (total contratado, pagado y saldo). 
+        // Saldos por expediente (total contratado, pagado y saldo).
         // El total suma las solicitudes vigentes   (sin canceladas ni «no aplica»)
         DB::statement(<<<'SQL'
             CREATE VIEW vista_saldos_expediente AS

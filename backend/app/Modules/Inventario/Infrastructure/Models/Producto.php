@@ -31,7 +31,7 @@ class Producto extends ModeloBase
         'umbral_minimo',
         'infantil',
         'publico',
-        'atributos'
+        'atributos',
     ];
 
     protected $appends = ['foto_url', 'critico'];
@@ -45,7 +45,7 @@ class Producto extends ModeloBase
         'alto_cm' => 'integer',
         'infantil' => 'boolean',
         'publico' => 'boolean',
-        'atributos' => 'array'
+        'atributos' => 'array',
     ];
 
     /** @return BelongsTo<Proveedor, $this> */
@@ -63,9 +63,9 @@ class Producto extends ModeloBase
     /** Medidas para mostrar: «largo × ancho × alto cm» si están cargadas; si no, el texto libre */
     public function medidasTexto(): ?string
     {
-        $numeros = array_filter([$this->largo_cm, $this->ancho_cm, $this->alto_cm], fn($v) => $v !== null);
+        $numeros = array_filter([$this->largo_cm, $this->ancho_cm, $this->alto_cm], fn ($v) => $v !== null);
 
-        return $numeros ? implode(' × ', $numeros) . ' cm' : $this->medidas;
+        return $numeros ? implode(' × ', $numeros).' cm' : $this->medidas;
     }
 
     /** Fotos para el carrusel: la principal (vista superior) y luego las adicionales, en orden */

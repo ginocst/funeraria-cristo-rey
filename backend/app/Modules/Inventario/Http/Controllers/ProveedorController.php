@@ -49,8 +49,8 @@ class ProveedorController extends Controller
                 'nullable',
                 'string',
                 'max:12',
-                fn($a, $v, $f) => $v && ! Rut::formatoValido($v) ? $f('El RUT debe tener el formato 12345678-9.') : null,
-                Rule::unique('proveedores', 'rut')->ignore($registro?->id)->whereNull('deleted_at')
+                fn ($a, $v, $f) => $v && ! Rut::formatoValido($v) ? $f('El RUT debe tener el formato 12345678-9.') : null,
+                Rule::unique('proveedores', 'rut')->ignore($registro?->id)->whereNull('deleted_at'),
             ],
             'rubro' => ['required', 'string', 'max:80'],
             'contacto' => ['nullable', 'string', 'max:120'],

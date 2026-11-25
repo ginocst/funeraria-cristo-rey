@@ -33,7 +33,7 @@ class CalendarioController extends Controller
                 'e.codigo',
                 'd.nombre as difunto',
                 'v.nombre as vehiculo',
-                'a.fin'
+                'a.fin',
             ]);
 
         $eventos = [];
@@ -50,13 +50,13 @@ class CalendarioController extends Controller
             $eventos[] = [
                 'id' => "a{$a->id}",
                 'tipo' => $a->tipo,
-                'titulo' => ($a->tipo === 'otra' ? 'Actividad' : ucfirst($a->tipo)) . ": {$a->difunto}",
+                'titulo' => ($a->tipo === 'otra' ? 'Actividad' : ucfirst($a->tipo)).": {$a->difunto}",
                 'inicio' => $a->inicio,
                 'fin' => $a->fin,
                 'lugar' => $a->lugar,
                 'expediente_id' => $a->expediente_id,
                 'codigo' => $a->codigo,
-                'estado' => 'aceptada'
+                'estado' => 'aceptada',
             ];
         }
 

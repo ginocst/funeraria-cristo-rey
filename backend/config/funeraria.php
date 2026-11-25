@@ -1,7 +1,7 @@
 <?php
 
 /*
-| Configuración del negocio. Cada permiso lista los roles que lo tienen. 
+| Configuración del negocio. Cada permiso lista los roles que lo tienen.
 | Lo que no aparece aquí queda denegado (denegación por defecto).
 */
 

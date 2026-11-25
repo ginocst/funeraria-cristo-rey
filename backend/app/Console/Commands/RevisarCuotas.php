@@ -20,8 +20,8 @@ class RevisarCuotas extends Command
             ->leftJoin(DB::raw('(SELECT cuota_id, SUM(monto) AS pagado FROM pagos WHERE cuota_id IS NOT NULL GROUP BY cuota_id) p'), 'p.cuota_id', '=', 'cu.id')
             ->whereNull('cu.deleted_at')->where('cu.vencimiento', $ayer)->whereRaw('COALESCE(p.pagado, 0) < cu.monto')
             ->get(['cu.id', 'cu.numero', 'e.id as expediente_id', 'e.codigo']);
-        DB::transaction(fn() => $cuotas->each(fn($c) => $eventos->publicar('cuota.atrasada', (array) $c)));
-        $this->info($cuotas->count() . ' cuotas atrasadas');
+        DB::transaction(fn () => $cuotas->each(fn ($c) => $eventos->publicar('cuota.atrasada', (array) $c)));
+        $this->info($cuotas->count().' cuotas atrasadas');
 
         return self::SUCCESS;
     }

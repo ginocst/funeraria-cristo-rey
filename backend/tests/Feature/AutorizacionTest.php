@@ -5,10 +5,10 @@ use Illuminate\Support\Facades\Route;
 it('exige un permiso explícito en toda ruta autenticada (denegación por defecto)', function () {
     $libres = ['api/me', 'api/avisos', 'api/avisos/leer-todos', 'api/avisos/{id}/leer', 'api/avisos/stream'];
     $sinPermiso = collect(Route::getRoutes()->getRoutes())
-        ->filter(fn($r) => str_starts_with($r->uri(), 'api/') && in_array('auth:sanctum', $r->gatherMiddleware(), true))
-        ->reject(fn($r) => in_array($r->uri(), $libres, true))
-        ->reject(fn($r) => collect($r->gatherMiddleware())->contains(fn($m) => is_string($m) && str_starts_with($m, 'can:')))
-        ->map(fn($r) => implode('|', $r->methods()) . ' ' . $r->uri())->values()->all();
+        ->filter(fn ($r) => str_starts_with($r->uri(), 'api/') && in_array('auth:sanctum', $r->gatherMiddleware(), true))
+        ->reject(fn ($r) => in_array($r->uri(), $libres, true))
+        ->reject(fn ($r) => collect($r->gatherMiddleware())->contains(fn ($m) => is_string($m) && str_starts_with($m, 'can:')))
+        ->map(fn ($r) => implode('|', $r->methods()).' '.$r->uri())->values()->all();
 
     expect($sinPermiso)->toBe([]);
 });

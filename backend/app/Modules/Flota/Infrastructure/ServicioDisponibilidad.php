@@ -27,7 +27,7 @@ class ServicioDisponibilidad implements IDisponibilidad
         }
         $ausentes = $this->operariosAusentes($equipo, $asignacion->inicio, $asignacion->fin);
         if ($ausentes) {
-            throw ReglaNegocioException::conflicto('Operario con ausencia registrada en ese horario: ' . implode(', ', $ausentes) . '.', 'ausencia');
+            throw ReglaNegocioException::conflicto('Operario con ausencia registrada en ese horario: '.implode(', ', $ausentes).'.', 'ausencia');
         }
 
         try {

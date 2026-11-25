@@ -57,8 +57,8 @@ class SolicitudController extends Controller
             $q->whereIn('s.estado', explode(',', $request->query('estado')));
         }
         if ($texto = trim((string) $request->query('q'))) {
-            $like = '%' . addcslashes($texto, '%_') . '%';
-            $q->where(fn($w) => $w->where('e.codigo', 'ilike', $like)->orWhere('c.nombre', 'ilike', $like)->orWhere('d.nombre', 'ilike', $like));
+            $like = '%'.addcslashes($texto, '%_').'%';
+            $q->where(fn ($w) => $w->where('e.codigo', 'ilike', $like)->orWhere('c.nombre', 'ilike', $like)->orWhere('d.nombre', 'ilike', $like));
         }
         if ($request->filled('expediente_id')) {
             $q->where('s.expediente_id', $request->integer('expediente_id'));
@@ -84,7 +84,7 @@ class SolicitudController extends Controller
             'productos:id,codigo,nombre,tipo,stock',
             'asignacion.vehiculo:id,nombre,patente,origen,proveedor_externo',
             'asignacion.equipo:id,nombre',
-            'evaluador:id,nombre'
+            'evaluador:id,nombre',
         ])->findOrFail($id);
         $resumen = app(IExpediente::class)->resumenFinanciero($s->expediente_id);
         $minimo = PoliticaReserva::abonoMinimoRequerido($resumen['total'], $parametros->entero('abono_minimo_pct'));

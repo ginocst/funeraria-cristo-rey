@@ -26,7 +26,7 @@ class ReporteMensualExport implements Export, WithMultipleSheets
             new HojaExport(
                 'Servicios',
                 ['Expediente', 'Difunto', 'Cliente', 'Sucursal', 'Traslado', 'Sepultura', 'Estado', 'Total', 'Pagado', 'Saldo'],
-                collect($d['servicios'])->map(fn($s) => [
+                collect($d['servicios'])->map(fn ($s) => [
                     $s->codigo,
                     $s->difunto,
                     $s->cliente,
@@ -36,12 +36,12 @@ class ReporteMensualExport implements Export, WithMultipleSheets
                     $s->estado,
                     (int) $s->total,
                     (int) $s->pagado,
-                    (int) $s->saldo
+                    (int) $s->saldo,
                 ])->all()
             ),
-            new HojaExport('Ingresos', ['Medio de pago', 'Cantidad', 'Total'], collect($d['ingresos_por_medio'])->map(fn($r) => [$r->medio, (int) $r->cantidad, (int) $r->total])->all()),
-            new HojaExport('Gastos', ['Categoría', 'Cantidad', 'Total'], collect($d['gastos_por_categoria'])->map(fn($r) => [$r->categoria, (int) $r->cantidad, (int) $r->total])->all()),
-            new HojaExport('Urnas', ['Código', 'Producto', 'Cantidad', 'Monto'], collect($d['urnas_vendidas'])->map(fn($r) => [$r->codigo, $r->nombre, (int) $r->cantidad, (int) $r->monto])->all()),
+            new HojaExport('Ingresos', ['Medio de pago', 'Cantidad', 'Total'], collect($d['ingresos_por_medio'])->map(fn ($r) => [$r->medio, (int) $r->cantidad, (int) $r->total])->all()),
+            new HojaExport('Gastos', ['Categoría', 'Cantidad', 'Total'], collect($d['gastos_por_categoria'])->map(fn ($r) => [$r->categoria, (int) $r->cantidad, (int) $r->total])->all()),
+            new HojaExport('Urnas', ['Código', 'Producto', 'Cantidad', 'Monto'], collect($d['urnas_vendidas'])->map(fn ($r) => [$r->codigo, $r->nombre, (int) $r->cantidad, (int) $r->monto])->all()),
         ];
     }
 }

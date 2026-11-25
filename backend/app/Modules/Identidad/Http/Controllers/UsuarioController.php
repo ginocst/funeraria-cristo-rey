@@ -24,15 +24,15 @@ class UsuarioController extends Controller
     {
         $q = Usuario::with('sucursal:id,nombre')->orderBy('nombre');
         if ($texto = trim((string) $request->query('q'))) {
-            $q->where(fn($w) => $w->where('nombre', 'ilike', "%$texto%")->orWhere('email', 'ilike', "%$texto%"));
+            $q->where(fn ($w) => $w->where('nombre', 'ilike', "%$texto%")->orWhere('email', 'ilike', "%$texto%"));
         }
         if ($request->filled('rol')) {
-            $q->whereExists(fn($s) => $s->from('rol_usuario')->join('roles', 'roles.id', '=', 'rol_usuario.rol_id')
+            $q->whereExists(fn ($s) => $s->from('rol_usuario')->join('roles', 'roles.id', '=', 'rol_usuario.rol_id')
                 ->whereColumn('rol_usuario.usuario_id', 'usuarios.id')->whereNull('rol_usuario.deleted_at')
                 ->whereNull('rol_usuario.vigencia_hasta')->where('roles.nombre', $request->query('rol')));
         }
 
-        return response()->json($q->get()->map(fn(Usuario $u) => $this->presentar($u)));
+        return response()->json($q->get()->map(fn (Usuario $u) => $this->presentar($u)));
     }
 
     public function show(int $id): JsonResponse
@@ -139,8 +139,8 @@ class UsuarioController extends Controller
                 'required',
                 'string',
                 'max:12',
-                fn($a, $v, $f) => Rut::formatoValido($v) ? null : $f('El RUT debe tener el formato 12345678-9.'),
-                Rule::unique('usuarios', 'rut')->ignore($usuario?->id)->whereNull('deleted_at')
+                fn ($a, $v, $f) => Rut::formatoValido($v) ? null : $f('El RUT debe tener el formato 12345678-9.'),
+                Rule::unique('usuarios', 'rut')->ignore($usuario?->id)->whereNull('deleted_at'),
             ],
             'telefono' => ['nullable', 'string', 'max:30'],
             'sucursal_id' => ['required', 'integer', Rule::exists('sucursales', 'id')->whereNull('deleted_at')],

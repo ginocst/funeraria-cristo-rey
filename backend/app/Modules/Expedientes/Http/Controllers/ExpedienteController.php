@@ -43,8 +43,8 @@ class ExpedienteController extends Controller
             ->orderByDesc('e.id');
 
         if ($texto = trim((string) $request->query('q'))) {
-            $like = '%' . addcslashes($texto, '%_') . '%';
-            $q->where(fn($w) => $w->where('e.codigo', 'ilike', $like)->orWhere('c.nombre', 'ilike', $like)
+            $like = '%'.addcslashes($texto, '%_').'%';
+            $q->where(fn ($w) => $w->where('e.codigo', 'ilike', $like)->orWhere('c.nombre', 'ilike', $like)
                 ->orWhere('d.nombre', 'ilike', $like)->orWhere('c.rut', 'ilike', $like));
         }
         if ($request->filled('estado')) {
@@ -105,7 +105,7 @@ class ExpedienteController extends Controller
 
     public function destroy(int $id): JsonResponse
     {
-        $expediente = Expediente::withCount(['solicitudes' => fn($q) => $q->whereIn('estado', ['aceptada', 'ejecutada'])])->findOrFail($id);
+        $expediente = Expediente::withCount(['solicitudes' => fn ($q) => $q->whereIn('estado', ['aceptada', 'ejecutada'])])->findOrFail($id);
         if ($expediente->solicitudes_count > 0 || DB::table('pagos')->where('expediente_id', $id)->exists()) {
             throw new ReglaNegocioException('El expediente tiene servicios o pagos registrados; cámbielo a «anulado» en lugar de eliminarlo.');
         }
@@ -126,10 +126,10 @@ class ExpedienteController extends Controller
             'estado' => ['sometimes', Rule::in(['abierto', 'en_servicio', 'cerrado', 'anulado'])],
             'observaciones' => ['nullable', 'string', 'max:2000'],
             'difunto' => [$req, 'array'],
-            'difunto.nombre' => ["required_with:difunto", 'string', 'max:160'],
-            'difunto.rut' => ['nullable', 'string', 'max:12', fn($a, $v, $f) => $v && ! Rut::formatoValido($v) ? $f('El RUT debe tener el formato 12345678-9.') : null],
+            'difunto.nombre' => ['required_with:difunto', 'string', 'max:160'],
+            'difunto.rut' => ['nullable', 'string', 'max:12', fn ($a, $v, $f) => $v && ! Rut::formatoValido($v) ? $f('El RUT debe tener el formato 12345678-9.') : null],
             'difunto.fecha_nacimiento' => ['nullable', 'date', 'before_or_equal:difunto.fecha_fallecimiento'],
-            'difunto.fecha_fallecimiento' => ["required_with:difunto", 'date', 'before_or_equal:today'],
+            'difunto.fecha_fallecimiento' => ['required_with:difunto', 'date', 'before_or_equal:today'],
         ];
     }
 

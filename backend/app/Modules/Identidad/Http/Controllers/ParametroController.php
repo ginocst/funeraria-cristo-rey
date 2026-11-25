@@ -16,7 +16,7 @@ class ParametroController extends Controller
     {
         $valores = $parametros->todos();
 
-        return response()->json(collect(config('funeraria.parametros'))->map(fn($p, $clave) => [
+        return response()->json(collect(config('funeraria.parametros'))->map(fn ($p, $clave) => [
             'clave' => $clave,
             'valor' => (int) $valores[$clave],
             'descripcion' => $p['descripcion'],
@@ -26,7 +26,7 @@ class ParametroController extends Controller
     public function update(Request $request, Parametros $parametros, IAuditoria $auditoria): JsonResponse
     {
         $claves = array_keys(config('funeraria.parametros'));
-        $reglas = collect($claves)->mapWithKeys(fn($c) => [$c => ['sometimes', 'integer', 'min:0', 'max:10000']])->all();
+        $reglas = collect($claves)->mapWithKeys(fn ($c) => [$c => ['sometimes', 'integer', 'min:0', 'max:10000']])->all();
         $reglas['abono_minimo_pct'] = ['sometimes', 'integer', 'min:0', 'max:100'];
         $datos = $request->validate($reglas);
         $antes = $parametros->todos();

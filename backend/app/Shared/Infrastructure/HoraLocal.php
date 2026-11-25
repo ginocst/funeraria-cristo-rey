@@ -24,6 +24,6 @@ final class HoraLocal
 
     public static function inicioMesUtc(string $mes): CarbonImmutable
     {
-        return CarbonImmutable::createFromFormat('Y-m-d H:i', $mes . '-01 00:00', self::zona())->utc();
+        return CarbonImmutable::createFromFormat('Y-m-d H:i', $mes.'-01 00:00', self::zona())->utc();
     }
 }

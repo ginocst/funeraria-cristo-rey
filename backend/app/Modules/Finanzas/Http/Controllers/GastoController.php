@@ -41,7 +41,7 @@ class GastoController extends Controller
     {
         $q = Gasto::query()->with(['sucursal:id,nombre', 'proveedor:id,nombre']);
         if ($request->filled('mes')) {
-            $inicio = $request->query('mes') . '-01';
+            $inicio = $request->query('mes').'-01';
             $q->where('fecha', '>=', $inicio)->where('fecha', '<', date('Y-m-d', strtotime("$inicio +1 month")));
         }
         if ($request->filled('categoria')) {

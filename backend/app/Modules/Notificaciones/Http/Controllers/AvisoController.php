@@ -64,7 +64,7 @@ class AvisoController extends Controller
                 $nuevos = Aviso::where('usuario_id', $usuarioId)->where('id', '>', $ultimo)->orderBy('id')->get();
                 foreach ($nuevos as $aviso) {
                     $ultimo = $aviso->id;
-                    echo "id: {$aviso->id}\nevent: aviso\ndata: " . json_encode($aviso, JSON_UNESCAPED_UNICODE) . "\n\n";
+                    echo "id: {$aviso->id}\nevent: aviso\ndata: ".json_encode($aviso, JSON_UNESCAPED_UNICODE)."\n\n";
                 }
                 echo ": latido\n\n";
                 if (ob_get_level() > 0) {

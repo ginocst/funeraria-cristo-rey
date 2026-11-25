@@ -6,8 +6,8 @@ function datosUsuario(array $cambios = []): array
 {
     return [
         'nombre' => 'Persona de prueba',
-        'email' => uniqid() . '@prueba.test',
-        'rut' => random_int(10_000_000, 99_999_999) . '-9',
+        'email' => uniqid().'@prueba.test',
+        'rut' => random_int(10_000_000, 99_999_999).'-9',
         'sucursal_id' => Sucursal::firstOrCreate(['nombre' => 'Temuco'])->id,
         'rol' => 'Operario',
         'password' => 'Clave-Segura-2026',

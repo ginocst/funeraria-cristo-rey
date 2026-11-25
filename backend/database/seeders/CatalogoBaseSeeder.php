@@ -35,7 +35,7 @@ class CatalogoBaseSeeder extends Seeder
         }
 
         foreach (config('funeraria.parametros') as $clave => $p) {
-            if (!DB::table('parametros')->where('clave', $clave)->exists()) {
+            if (! DB::table('parametros')->where('clave', $clave)->exists()) {
                 DB::table('parametros')->insert(['clave' => $clave, 'valor' => $p['valor'], 'descripcion' => $p['descripcion'], 'created_at' => $ahora, 'updated_at' => $ahora]);
             }
         }

@@ -58,7 +58,7 @@ final class PoliticaReserva
     {
         return [
             $traslado->sub(new DateInterval("PT{$presentacionMinutos}M")),
-            $traslado->add(new DateInterval('PT' . max(1, $duracionHoras) . 'H')),
+            $traslado->add(new DateInterval('PT'.max(1, $duracionHoras).'H')),
         ];
     }
 }

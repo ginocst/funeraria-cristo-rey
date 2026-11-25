@@ -16,7 +16,7 @@ final class ReglasPago
             throw new ReglaNegocioException('El expediente no tiene saldo por pagar. Registre primero la solicitud del servicio.', 'sin_saldo');
         }
         if ($monto > $saldo) {
-            throw new ReglaNegocioException('El importe supera el saldo pendiente ($' . number_format($saldo, 0, ',', '.') . ').', 'importe');
+            throw new ReglaNegocioException('El importe supera el saldo pendiente ($'.number_format($saldo, 0, ',', '.').').', 'importe');
         }
     }
 

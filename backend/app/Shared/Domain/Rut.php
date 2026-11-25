@@ -14,13 +14,13 @@ final class Rut
             return $limpio;
         }
 
-        return substr($limpio, 0, -1) . '-' . substr($limpio, -1);
+        return substr($limpio, 0, -1).'-'.substr($limpio, -1);
     }
 
     public static function formatoValido(string $rut): bool
     {
         // Solo dígitos, puntos opcionales, guion opcional y DV 0-9 o K.
-        if (!preg_match('/^(\d{1,2}(\.\d{3}){2}|\d{7,8})-?[0-9kK]$/', trim($rut))) {
+        if (! preg_match('/^(\d{1,2}(\.\d{3}){2}|\d{7,8})-?[0-9kK]$/', trim($rut))) {
             return false;
         }
 
@@ -33,6 +33,6 @@ final class Rut
         $n = self::normalizar($rut);
         [$cuerpo, $dv] = array_pad(explode('-', $n), 2, '');
 
-        return number_format((int) $cuerpo, 0, ',', '.') . '-' . $dv;
+        return number_format((int) $cuerpo, 0, ',', '.').'-'.$dv;
     }
 }

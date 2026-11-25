@@ -4,8 +4,8 @@ namespace App\Console\Commands;
 
 use App\Modules\Identidad\Infrastructure\Models\Sucursal;
 use App\Modules\Identidad\Infrastructure\Models\Usuario;
-use Illuminate\Console\Command;
 use App\Shared\Domain\Rut;
+use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -52,7 +52,7 @@ class CrearAdministrador extends Command
                 'rut' => Rut::normalizar($this->argument('rut')),
                 'password' => $password,
                 'sucursal_id' => $sucursal->id,
-                'activo' => true
+                'activo' => true,
             ]);
             $usuario->asignarRolBase('Administrador');
         });

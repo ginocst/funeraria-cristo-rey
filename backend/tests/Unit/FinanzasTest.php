@@ -36,7 +36,7 @@ it('clasifica cuotas pagadas, pendientes y atrasadas', function () {
 
     // «Hoy» a las 00:00 local y el vencimiento a las 00:00 UTC: la cuota que vence hoy no está atrasada
     $hoyChile = new DateTimeImmutable('2026-11-16 00:00', new DateTimeZone('America/Santiago'));
-    $vence = fn(string $dia) => new DateTimeImmutable($dia, new DateTimeZone('UTC'));
+    $vence = fn (string $dia) => new DateTimeImmutable($dia, new DateTimeZone('UTC'));
     expect(PlanCuotas::estado(1000, 0, $vence('2026-11-16'), $hoyChile))->toBe('pendiente')
         ->and(PlanCuotas::estado(1000, 0, $vence('2026-11-15'), $hoyChile))->toBe('atrasada');
 });

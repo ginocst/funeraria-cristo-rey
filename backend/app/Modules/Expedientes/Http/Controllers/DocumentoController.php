@@ -37,7 +37,7 @@ class DocumentoController extends Controller
             'image/webp' => 'webp',
             default => 'jpg',
         };
-        $clave = "expedientes/$expedienteId/" . Str::uuid() . '.' . $extension;
+        $clave = "expedientes/$expedienteId/".Str::uuid().'.'.$extension;
         Storage::disk('archivos')->put($clave, file_get_contents($archivo->getRealPath()));
 
         $registro = Archivo::create([

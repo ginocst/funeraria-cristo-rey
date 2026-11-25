@@ -4,6 +4,7 @@ namespace App\Shared\Http;
 
 use App\Shared\Contratos\IAuditoria;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -16,7 +17,7 @@ use Illuminate\Http\Request;
  */
 trait CrudSimple
 {
-    /** @return class-string<\Illuminate\Database\Eloquent\Model> */
+    /** @return class-string<Model> */
     abstract protected function modelo(): string;
 
     abstract protected function reglas(Request $request, $registro = null): array;
@@ -42,7 +43,7 @@ trait CrudSimple
         if ($texto = trim((string) $request->query('q'))) {
             $q->where(function (Builder $w) use ($texto) {
                 foreach ($this->buscables() as $campo) {
-                    $w->orWhere($campo, 'ilike', '%' . addcslashes($texto, '%_') . '%');
+                    $w->orWhere($campo, 'ilike', '%'.addcslashes($texto, '%_').'%');
                 }
             });
         }

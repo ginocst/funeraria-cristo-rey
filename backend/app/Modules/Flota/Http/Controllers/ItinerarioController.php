@@ -20,11 +20,11 @@ class ItinerarioController extends Controller
         $asignaciones = Asignacion::with(['vehiculo:id,nombre,patente,origen', 'equipo:id,nombre', 'solicitud.expediente.difunto:id,nombre', 'solicitud.sucursal:id,nombre'])
             ->where('activa', true)
             ->where('fin', '>=', now()->subDay())
-            ->whereHas('equipo', fn($q) => $q->where('usuarios.id', $usuarioId))
+            ->whereHas('equipo', fn ($q) => $q->where('usuarios.id', $usuarioId))
             ->orderBy('inicio')
             ->get();
 
-        return response()->json($asignaciones->map(fn(Asignacion $a) => $this->presentar($a, $parametros)));
+        return response()->json($asignaciones->map(fn (Asignacion $a) => $this->presentar($a, $parametros)));
     }
 
     /** Detalle de una asignación: el operario solo puede ver las propias (si no, 403) */
@@ -56,7 +56,7 @@ class ItinerarioController extends Controller
             'sepultura_detalle' => $s->sepultura_detalle,
             'estado' => $s->estado,
             'vehiculo' => $a->vehiculo,
-            'equipo' => $a->equipo->map(fn($u) => ['id' => $u->id, 'nombre' => $u->nombre, 'funcion' => $u->pivot->funcion]),
+            'equipo' => $a->equipo->map(fn ($u) => ['id' => $u->id, 'nombre' => $u->nombre, 'funcion' => $u->pivot->funcion]),
         ];
     }
 }

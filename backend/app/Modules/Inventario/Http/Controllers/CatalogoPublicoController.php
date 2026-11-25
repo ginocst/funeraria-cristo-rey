@@ -32,8 +32,8 @@ class CatalogoPublicoController extends Controller
 
         $q = Producto::query()->with('fotos')->where('publico', true);
         if (! empty($f['q'])) {
-            $like = '%' . addcslashes($f['q'], '%_') . '%';
-            $q->where(fn($w) => $w->where('nombre', 'ilike', $like)->orWhere('codigo', 'ilike', $like)->orWhere('descripcion', 'ilike', $like));
+            $like = '%'.addcslashes($f['q'], '%_').'%';
+            $q->where(fn ($w) => $w->where('nombre', 'ilike', $like)->orWhere('codigo', 'ilike', $like)->orWhere('descripcion', 'ilike', $like));
         }
         foreach (['tipo', 'material', 'color'] as $campo) {
             if (! empty($f[$campo])) {
@@ -58,7 +58,7 @@ class CatalogoPublicoController extends Controller
             default => $q->orderBy('infantil')->orderByRaw("array_position(ARRAY['ataud','urna','urna_cremacion','elemento']::varchar[], tipo::varchar)")->orderByDesc('precio'),
         };
 
-        return response()->json($q->get()->map(fn(Producto $p) => [
+        return response()->json($q->get()->map(fn (Producto $p) => [
             ...$p->only(self::CAMPOS),
             'medidas' => $p->medidasTexto(),
             'galeria' => $p->galeria(),

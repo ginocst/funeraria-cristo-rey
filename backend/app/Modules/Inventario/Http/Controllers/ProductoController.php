@@ -192,7 +192,7 @@ class ProductoController extends Controller
         $request->validate(['foto' => ['required', 'file', 'max:5120', 'mimetypes:image/jpeg,image/png,image/webp']]);
         $producto = Producto::findOrFail($id);
         $imagen = Image::decode($request->file('foto'))->scaleDown(width: 1000);
-        $ruta = Str::slug($producto->codigo) . '-' . Str::random(8) . '.webp';
+        $ruta = Str::slug($producto->codigo).'-'.Str::random(8).'.webp';
         Storage::disk('catalogo')->put($ruta, $imagen->encodeUsingFormat(Format::WEBP, quality: 82)->toString());
         $anterior = $producto->foto_ruta;
         $producto->foto_ruta = $ruta;
@@ -223,7 +223,7 @@ class ProductoController extends Controller
             throw ValidationException::withMessages(['foto' => 'Cada modelo admite hasta 8 fotos adicionales.']);
         }
         $imagen = Image::decode($request->file('foto'))->scaleDown(width: 1000);
-        $ruta = Str::slug($producto->codigo) . '-' . $datos['vista'] . '-' . Str::random(8) . '.webp';
+        $ruta = Str::slug($producto->codigo).'-'.$datos['vista'].'-'.Str::random(8).'.webp';
         Storage::disk('catalogo')->put($ruta, $imagen->encodeUsingFormat(Format::WEBP, quality: 82)->toString());
         $foto = $producto->fotos()->create(['ruta' => $ruta, 'vista' => $datos['vista'], 'orden' => (int) $producto->fotos()->max('orden') + 1]);
         $this->auditoria->registrar('foto_producto', 'productos', $id, null, ['vista' => $datos['vista']]);

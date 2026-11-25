@@ -30,7 +30,7 @@ class ConvenioController extends Controller
         if ($request->query('estado') === 'vigentes') {
             $hoy = now(config('funeraria.zona_horaria_local'))->toDateString();
             $q->where('activo', true)->where('vigencia_desde', '<=', $hoy)
-                ->where(fn($w) => $w->whereNull('vigencia_hasta')->orWhere('vigencia_hasta', '>=', $hoy));
+                ->where(fn ($w) => $w->whereNull('vigencia_hasta')->orWhere('vigencia_hasta', '>=', $hoy));
         }
         if ($request->filled('tipo')) {
             $q->where('tipo', $request->query('tipo'));
@@ -60,8 +60,8 @@ class ConvenioController extends Controller
         $hoy = now(config('funeraria.zona_horaria_local'))->toDateString();
 
         return response()->json(Convenio::where('activo', true)->where('vigencia_desde', '<=', $hoy)
-            ->where(fn($w) => $w->whereNull('vigencia_hasta')->orWhere('vigencia_hasta', '>=', $hoy))
+            ->where(fn ($w) => $w->whereNull('vigencia_hasta')->orWhere('vigencia_hasta', '>=', $hoy))
             ->orderBy('nombre')->get(['id', 'nombre', 'institucion', 'tipo'])
-            ->map(fn($c) => $c->only(['id', 'nombre', 'institucion', 'tipo'])));
+            ->map(fn ($c) => $c->only(['id', 'nombre', 'institucion', 'tipo'])));
     }
 }

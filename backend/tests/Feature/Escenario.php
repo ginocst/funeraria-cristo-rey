@@ -13,7 +13,7 @@ final class Escenario
             ?? DB::table('sucursales')->insertGetId(['nombre' => 'Temuco', 'created_at' => now(), 'updated_at' => now()]);
         $vehiculo = DB::table('vehiculos')->insertGetId(['nombre' => 'Carroza', 'tipo' => 'carroza', 'origen' => 'propio', 'activo' => true, 'created_at' => now(), 'updated_at' => now()]);
         $producto = DB::table('productos')->insertGetId([
-            'codigo' => 'AT-' . uniqid(),
+            'codigo' => 'AT-'.uniqid(),
             'nombre' => 'Imperial Roble',
             'tipo' => 'ataud',
             'precio' => 500000,
@@ -21,7 +21,7 @@ final class Escenario
             'umbral_minimo' => 0,
             'publico' => true,
             'created_at' => now(),
-            'updated_at' => now()
+            'updated_at' => now(),
         ]);
 
         return compact('sucursal', 'vehiculo', 'producto');
@@ -29,7 +29,7 @@ final class Escenario
 
     public static function expediente(int $sucursal): int
     {
-        $cliente = DB::table('clientes')->insertGetId(['rut' => random_int(10000000, 25000000) . '-' . random_int(0, 9), 'nombre' => 'Cliente', 'created_at' => now(), 'updated_at' => now()]);
+        $cliente = DB::table('clientes')->insertGetId(['rut' => random_int(10000000, 25000000).'-'.random_int(0, 9), 'nombre' => 'Cliente', 'created_at' => now(), 'updated_at' => now()]);
         $difunto = DB::table('difuntos')->insertGetId(['nombre' => 'Difunto', 'fecha_fallecimiento' => now()->toDateString(), 'created_at' => now(), 'updated_at' => now()]);
 
         return DB::table('expedientes')->insertGetId(['cliente_id' => $cliente, 'sucursal_id' => $sucursal, 'difunto_id' => $difunto, 'created_at' => now(), 'updated_at' => now()]);
