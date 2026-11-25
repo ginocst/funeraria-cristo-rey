@@ -40,8 +40,7 @@ const SERVICIOS: { icono: ReactNode; titulo: string; texto: string }[] = [
   {
     icono: <Inventory2OutlinedIcon />,
     titulo: "Urnas y ataúdes",
-    texto:
-      "Modelos para adultos y niños, más detalles en el catálogo.",
+    texto: "Modelos para adultos y niños, más detalles en el catálogo.",
   },
   {
     icono: <SpaOutlinedIcon />,
@@ -351,44 +350,46 @@ export default function Portada() {
             sinMargen
           />
           <Stack spacing={3}>
-            <Stack direction="row" spacing={2}>
-              <PlaceOutlinedIcon sx={{ color: colores.vino, mt: 0.25 }} />
-              <Box>
-                <Typography sx={{ fontWeight: 600, fontSize: "1.1rem" }}>
-                  {CONTACTO.direccion}
-                </Typography>
-                <Typography color="text.secondary">
-                  {CONTACTO.ciudad}, {CONTACTO.codigoPostal}
-                </Typography>
-                <Button
-                  href={CONTACTO.mapa}
-                  target="_blank"
-                  rel="noopener"
-                  sx={{ mt: 1, ml: -1 }}
-                >
-                  Cómo llegar
-                </Button>
-              </Box>
-            </Stack>
-            <Stack direction="row" spacing={2}>
-              <PhoneRoundedIcon sx={{ color: colores.vino, mt: 0.25 }} />
-              <Box>
-                <Typography
-                  component="a"
-                  href={CONTACTO.telefonoEnlace}
-                  sx={{
-                    fontWeight: 600,
-                    fontSize: "1.1rem",
-                    color: "inherit",
-                    textDecoration: "none",
-                    "&:hover": { textDecoration: "underline" },
-                  }}
-                >
-                  {CONTACTO.telefono}
-                </Typography>
-                <Typography color="text.secondary">Teléfono</Typography>
-              </Box>
-            </Stack>
+            {CONTACTO.sucursales.map((sucursal) => (
+              <Stack key={sucursal.nombre} direction="row" spacing={2}>
+                <PlaceOutlinedIcon sx={{ color: colores.vino, mt: 0.25 }} />
+                <Box>
+                  <Typography color="text.secondary" variant="body2">
+                    {sucursal.nombre}
+                  </Typography>
+                  <Typography sx={{ fontWeight: 600, fontSize: "1.1rem" }}>
+                    {sucursal.direccion}
+                  </Typography>
+                  <Typography color="text.secondary">
+                    {[sucursal.sector, sucursal.ciudad]
+                      .filter(Boolean)
+                      .join(", ")}
+                  </Typography>
+                  <Typography
+                    component="a"
+                    href={sucursal.telefonoEnlace}
+                    sx={{
+                      display: "block",
+                      mt: 0.5,
+                      fontWeight: 600,
+                      color: "inherit",
+                      textDecoration: "none",
+                      "&:hover": { textDecoration: "underline" },
+                    }}
+                  >
+                    {sucursal.telefono}
+                  </Typography>
+                  <Button
+                    href={sucursal.mapa}
+                    target="_blank"
+                    rel="noopener"
+                    sx={{ mt: 1, ml: -1 }}
+                  >
+                    Cómo llegar
+                  </Button>
+                </Box>
+              </Stack>
+            ))}
           </Stack>
         </Box>
       </Box>
