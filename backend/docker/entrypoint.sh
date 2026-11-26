@@ -19,6 +19,12 @@ php artisan storage:link >/dev/null 2>&1 || true
 if [ "${RUN_MIGRATIONS:-false}" = "true" ]; then
   php artisan migrate --force
   php artisan db:seed --class=Database\\Seeders\\CatalogoBaseSeeder --force
+
+  # Demostración: DemoSeeder no hace nada si ya existen usuarios,
+  # así que dejarlo activo en cada arranque es inofensivo
+  if [ "${CARGAR_DEMO:-false}" = "true" ]; then
+    php artisan db:seed --class=Database\\Seeders\\DemoSeeder --force
+  fi
 fi
 
 # Primer administrador (solo si se definieron las variables; no hace nada si ya existe).

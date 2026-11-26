@@ -1,0 +1,46 @@
+{
+  "image": "__IMAGEN__",
+  "containerPort": 8080,
+  "awsLogsConfiguration": {
+    "logGroup": "/ecs/funeraria-api",
+    "logStreamPrefix": "api"
+  },
+  "environment": [
+    { "name": "APP_ENV", "value": "production" },
+    { "name": "APP_DEBUG", "value": "false" },
+    { "name": "APP_URL", "value": "__URL_APP__" },
+    { "name": "FRONTEND_URL", "value": "__URL_APP__" },
+    { "name": "APP_LOCALE", "value": "es" },
+    { "name": "LOG_CHANNEL", "value": "stderr" },
+    { "name": "DB_CONNECTION", "value": "pgsql" },
+    { "name": "DB_HOST", "value": "__DB_HOST__" },
+    { "name": "DB_PORT", "value": "5432" },
+    { "name": "DB_DATABASE", "value": "funeraria" },
+    { "name": "DB_SSLMODE", "value": "require" },
+    { "name": "SESSION_DRIVER", "value": "database" },
+    { "name": "SESSION_LIFETIME", "value": "30" },
+    { "name": "SESSION_SECURE_COOKIE", "value": "true" },
+    { "name": "SESSION_DOMAIN", "value": "__DOMINIO__" },
+    { "name": "SANCTUM_STATEFUL_DOMAINS", "value": "__DOMINIO__" },
+    { "name": "CORS_ALLOWED_ORIGINS", "value": "__URL_APP__" },
+    { "name": "CACHE_STORE", "value": "database" },
+    { "name": "QUEUE_CONNECTION", "value": "database" },
+    { "name": "MFA_OBLIGATORIO", "value": "false" },
+    { "name": "SEED_DEMO", "value": "false" },
+    { "name": "CARGAR_DEMO", "value": "true" },
+    { "name": "RUN_MIGRATIONS", "value": "true" },
+    { "name": "ARCHIVOS_DRIVER", "value": "s3" },
+    { "name": "CATALOGO_DRIVER", "value": "s3" },
+    { "name": "AWS_DEFAULT_REGION", "value": "us-east-1" },
+    { "name": "AWS_BUCKET_ARCHIVOS", "value": "__BUCKET_ARCHIVOS__" },
+    { "name": "AWS_BUCKET_FRONTEND", "value": "__BUCKET_FRONTEND__" },
+    { "name": "CATALOGO_URL", "value": "__URL_APP__/catalogo" },
+    { "name": "MAIL_MAILER", "value": "ses" },
+    { "name": "MAIL_FROM_ADDRESS", "value": "__CORREO_REMITENTE__" }
+  ],
+  "secrets": [
+    { "name": "APP_KEY", "valueFrom": "__ARN_SECRETO__:APP_KEY::" },
+    { "name": "DB_USERNAME", "valueFrom": "__ARN_SECRETO__:DB_USERNAME::" },
+    { "name": "DB_PASSWORD", "valueFrom": "__ARN_SECRETO__:DB_PASSWORD::" }
+  ]
+}
