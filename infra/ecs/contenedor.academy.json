@@ -34,7 +34,7 @@
     { "name": "AWS_DEFAULT_REGION", "value": "us-east-1" },
     { "name": "AWS_BUCKET_ARCHIVOS", "value": "__BUCKET_ARCHIVOS__" },
     { "name": "AWS_BUCKET_FRONTEND", "value": "__BUCKET_FRONTEND__" },
-    { "name": "CATALOGO_URL", "value": "__URL_APP__/catalogo" },
+    { "name": "CATALOGO_URL", "value": "__CATALOGO_URL__" },
     { "name": "MAIL_MAILER", "value": "log" },
     { "name": "MAIL_FROM_ADDRESS", "value": "no-responder@funeraria.test" }
   ],

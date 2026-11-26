@@ -25,3 +25,7 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Interfaz compilada que se incluye en la imagen de Docker (no se versiona)
+/web/*
+!/web/.gitkeep

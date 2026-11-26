@@ -29,6 +29,8 @@ COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 
 WORKDIR /var/www/html
 COPY --from=vendor --chown=www-data:www-data /app /var/www/html
+# Interfaz compilada (se copia a backend/web antes del build
+COPY --from=vendor --chown=www-data:www-data /app/web /var/www/web
 
 RUN chmod +x /usr/local/bin/entrypoint.sh \
  && mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views storage/logs bootstrap/cache /run/nginx \
