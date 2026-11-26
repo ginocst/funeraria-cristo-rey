@@ -35,8 +35,8 @@
     { "name": "AWS_BUCKET_ARCHIVOS", "value": "__BUCKET_ARCHIVOS__" },
     { "name": "AWS_BUCKET_FRONTEND", "value": "__BUCKET_FRONTEND__" },
     { "name": "CATALOGO_URL", "value": "__URL_APP__/catalogo" },
-    { "name": "MAIL_MAILER", "value": "ses" },
-    { "name": "MAIL_FROM_ADDRESS", "value": "__CORREO_REMITENTE__" }
+    { "name": "MAIL_MAILER", "value": "log" },
+    { "name": "MAIL_FROM_ADDRESS", "value": "no-responder@funeraria.test" }
   ],
   "secrets": [
     { "name": "APP_KEY", "valueFrom": "__ARN_SECRETO__:APP_KEY::" },
