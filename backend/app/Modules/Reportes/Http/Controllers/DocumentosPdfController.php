@@ -45,7 +45,7 @@ class DocumentosPdfController extends Controller
             'solicitud' => $s,
             'resumen' => $expedientes->resumenFinanciero($s->expediente_id),
             'presentacion' => $s->traslado_at?->copy()->subMinutes($parametros->entero('presentacion_previa_minutos')),
-        ], 'orden-servicio-' . $s->expediente->codigo . '.pdf');
+        ], 'orden-servicio-'.$s->expediente->codigo.'.pdf');
     }
 
     public function comprobante(int $id, IExpediente $expedientes): Response
@@ -58,7 +58,7 @@ class DocumentosPdfController extends Controller
             'pago' => $c->pago,
             'expediente' => $expediente,
             'resumen' => $expedientes->resumenFinanciero($expediente->id),
-        ], 'comprobante-' . $c->folio . '.pdf');
+        ], 'comprobante-'.$c->folio.'.pdf');
     }
 
     public function mensualJson(Request $request, Indicadores $indicadores): JsonResponse
@@ -89,7 +89,7 @@ class DocumentosPdfController extends Controller
 
     private function pdf(string $vista, array $datos, string $nombre): Response
     {
-        $logo = 'data:image/png;base64,' . base64_encode((string) file_get_contents(public_path('img/logo.png')));
+        $logo = 'data:image/png;base64,'.base64_encode((string) file_get_contents(public_path('img/logo.png')));
 
         return Pdf::loadView($vista, [...$datos, 'logo' => $logo])->setPaper('letter')->stream($nombre);
     }

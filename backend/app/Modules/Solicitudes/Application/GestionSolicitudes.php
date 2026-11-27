@@ -46,6 +46,7 @@ class GestionSolicitudes
             if (in_array($expediente->estado, ['cerrado', 'anulado'], true)) {
                 throw new ReglaNegocioException('El expediente está cerrado o anulado.');
             }
+            $this->validarProductos($datos['productos']);
             $solicitud = Solicitud::create([...$this->camposSolicitud($datos), 'expediente_id' => $expediente->id, 'estado' => EstadoSolicitud::EnRevision]);
             $this->guardarProductos($solicitud, $datos['productos']);
             $this->guardarAsignacion($solicitud, $datos);
@@ -78,6 +79,8 @@ class GestionSolicitudes
                 $this->stock->liberar($solicitud->id, $solicitud->itemsProductos(), 'Reposición por modificación de la solicitud');
                 $this->disponibilidad->liberarAsignacion($solicitud->id);
             }
+            // Se valida después de liberar: en una aceptada, sus propias unidades cuentan como disponibles
+            $this->validarProductos($datos['productos']);
 
             $nuevoEstado = $estado === EstadoSolicitud::ConObservaciones ? EstadoSolicitud::EnRevision : $estado;
             $solicitud->update([...$this->camposSolicitud($datos), 'estado' => $nuevoEstado]);
@@ -121,6 +124,7 @@ class GestionSolicitudes
                     .' ('.$porcentaje.' %) y hay $'.number_format($resumen['pagado'], 0, ',', '.').' pagados.', 'abono_minimo');
             }
 
+            $this->validarUrna($solicitud->itemsProductos());
             $this->stock->reservar($solicitud->id, $solicitud->itemsProductos());
             $this->disponibilidad->activarAsignacion($solicitud->id);
 
@@ -214,12 +218,39 @@ class GestionSolicitudes
         ];
     }
 
-    /** Guarda las urnas y elementos con el precio vigente (instantánea del precio) */
+    /** Al menos un ataúd o urna, y stock suficiente de todo lo pedido */
+    private function validarProductos(array $productos): void
+    {
+        $items = [];
+        foreach ($productos as $item) {
+            $items[(int) $item['producto_id']] = (int) ($item['cantidad'] ?? 1);
+        }
+        $this->validarUrna($items);
+        $this->stock->verificarDisponible($items);
+    }
+
+    /** @param  array<int, int>  $items  producto_id => cantidad */
+    private function validarUrna(array $items): void
+    {
+        $tipos = Producto::withTrashed()->whereKey(array_keys($items))->pluck('tipo', 'id');
+        $productos = [];
+        foreach ($items as $id => $cantidad) {
+            $productos[] = ['tipo' => (string) ($tipos[$id] ?? ''), 'cantidad' => (int) $cantidad];
+        }
+        PoliticaReserva::validarUrna($productos);
+    }
+
+    /**
+     * Guarda las urnas y elementos con una instantánea del precio: lo que la solicitud
+     * ya tenía conserva su precio, y lo que se agrega toma el precio vigente
+     */
     private function guardarProductos(Solicitud $solicitud, array $productos): void
     {
+        $preciosPactados = DB::table('producto_solicitud')->where('solicitud_id', $solicitud->id)
+            ->whereNull('deleted_at')->pluck('precio_unitario', 'producto_id');
         DB::table('producto_solicitud')->where('solicitud_id', $solicitud->id)->delete();
         foreach ($productos as $item) {
-            $precio = Producto::whereKey($item['producto_id'])->value('precio');
+            $precio = $preciosPactados[$item['producto_id']] ?? Producto::whereKey($item['producto_id'])->value('precio');
             DB::table('producto_solicitud')->insert([
                 'producto_id' => $item['producto_id'],
                 'solicitud_id' => $solicitud->id,

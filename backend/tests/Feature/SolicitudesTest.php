@@ -85,3 +85,68 @@ it('al cancelar una aceptada repone el stock y libera la asignación', function 
     expect(DB::table('productos')->where('id', $this->base['producto'])->value('stock'))->toBe(1)
         ->and(DB::table('asignaciones')->where('solicitud_id', $id)->value('activa'))->toBeFalse();
 });
+
+function productoDePrueba(string $tipo, int $stock = 5, int $precio = 10000): int
+{
+    return DB::table('productos')->insertGetId([
+        'codigo' => 'P-' . uniqid(),
+        'nombre' => "Producto $tipo",
+        'tipo' => $tipo,
+        'precio' => $precio,
+        'stock' => $stock,
+        'umbral_minimo' => 0,
+        'publico' => true,
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+}
+
+function pedir($test, array $productos)
+{
+    $exp = Escenario::expediente($test->base['sucursal']);
+    $datos = [...Escenario::datosSolicitud($exp, $test->base, [$test->operario->id]), 'productos' => $productos];
+
+    return $test->actingAs($test->admin)->postJson('/api/solicitudes', $datos);
+}
+
+it('exige un ataúd o urna, y admite varios', function () {
+    $flores = productoDePrueba('elemento');
+    $cenizas = productoDePrueba('urna_cremacion');
+    $ataud = $this->base['producto'];
+
+    pedir($this, [['producto_id' => $flores, 'cantidad' => 1]])->assertUnprocessable()->assertJsonPath('codigo', 'sin_urna');
+    // Cremación con las cenizas repartidas en varias urnas, además del ataúd
+    pedir($this, [['producto_id' => $ataud], ['producto_id' => $cenizas, 'cantidad' => 3]])->assertCreated();
+});
+
+it('no registra una solicitud si el stock no alcanza', function () {
+    $flores = productoDePrueba('elemento', stock: 2);
+
+    pedir($this, [['producto_id' => $this->base['producto']], ['producto_id' => $flores, 'cantidad' => 3]])
+        ->assertStatus(409)->assertJsonPath('codigo', 'sin_stock');
+
+    DB::table('productos')->where('id', $this->base['producto'])->update(['stock' => 0]);
+    pedir($this, [['producto_id' => $this->base['producto']]])->assertStatus(409)->assertJsonPath('codigo', 'sin_stock');
+
+    expect(DB::table('solicitudes')->count())->toBe(0);
+});
+
+it('al editar conserva el precio pactado y usa el vigente solo en lo que se agrega', function () {
+    $flores = productoDePrueba('elemento', precio: 10000);
+    $exp = Escenario::expediente($this->base['sucursal']);
+    $id = crearSolicitud($this, $exp, [$this->operario->id]);
+    Escenario::pagar($exp, 600000);
+    $this->actingAs($this->admin)->postJson("/api/solicitudes/$id/aceptar", [], ['Idempotency-Key' => 'p'])->assertOk();
+    DB::table('productos')->where('id', $this->base['producto'])->update(['precio' => 900000]);
+
+    // Aceptada y con stock 0: su propia unidad cuenta como disponible al editar
+    $datos = Escenario::datosSolicitud($exp, $this->base, [$this->operario->id]);
+    unset($datos['expediente_id']);
+    $datos['productos'][] = ['producto_id' => $flores, 'cantidad' => 2];
+    $this->actingAs($this->admin)->putJson("/api/solicitudes/$id", $datos)->assertOk();
+
+    $precios = DB::table('producto_solicitud')->where('solicitud_id', $id)->pluck('precio_unitario', 'producto_id');
+    expect((int) $precios[$this->base['producto']])->toBe(500000)
+        ->and((int) $precios[$flores])->toBe(10000)
+        ->and(DB::table('productos')->where('id', $this->base['producto'])->value('stock'))->toBe(0);
+});

@@ -12,6 +12,25 @@ use DateTimeImmutable;
  */
 final class PoliticaReserva
 {
+    /** Tipos de producto que cuentan como el ataúd o la urna del servicio */
+    public const TIPOS_URNA = ['ataud', 'urna', 'urna_cremacion'];
+
+    /**
+     * El servicio debe incluir al menos un ataúd o urna. No hay límite de cantidad:
+     * por ejemplo, las cenizas pueden repartirse en varias urnas
+     *
+     * @param  list<array{tipo: string, cantidad: int}>  $productos
+     */
+    public static function validarUrna(array $productos): void
+    {
+        foreach ($productos as $producto) {
+            if (in_array($producto['tipo'], self::TIPOS_URNA, true) && $producto['cantidad'] > 0) {
+                return;
+            }
+        }
+        throw new ReglaNegocioException('La solicitud debe incluir un ataúd o urna.', 'sin_urna');
+    }
+
     public static function validarAnticipacion(DateTimeImmutable $traslado, DateTimeImmutable $ahora, int $horasMinimas): void
     {
         $limite = $ahora->add(new DateInterval("PT{$horasMinimas}H"));

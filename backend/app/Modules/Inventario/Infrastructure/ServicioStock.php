@@ -34,6 +34,14 @@ class ServicioStock implements IStock
         }
     }
 
+    public function verificarDisponible(array $items): void
+    {
+        foreach ($items as $productoId => $cantidad) {
+            $producto = Producto::whereKey($productoId)->firstOrFail();
+            Stock::descontar($producto->stock, (int) $cantidad, $producto->nombre); // solo valida
+        }
+    }
+
     public function liberar(int $solicitudId, array $items, string $motivo): void
     {
         ksort($items);

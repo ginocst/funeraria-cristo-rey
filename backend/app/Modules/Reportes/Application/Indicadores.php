@@ -123,7 +123,7 @@ class Indicadores
             ->selectRaw("to_char((traslado_at AT TIME ZONE 'UTC') AT TIME ZONE ?, 'YYYY-MM') AS mes, COUNT(*) AS total", [$zona])
             ->groupBy('mes')->pluck('total', 'mes');
 
-        return $this->rellenarMeses($meses, fn($m) => (int) ($filas[$m] ?? 0));
+        return $this->rellenarMeses($meses, fn ($m) => (int) ($filas[$m] ?? 0));
     }
 
     private function finanzasPorMes(int $meses): array
@@ -135,7 +135,7 @@ class Indicadores
         $gastos = DB::table('gastos')->whereNull('deleted_at')->where('fecha', '>=', $desde->toDateString())
             ->selectRaw("to_char(fecha, 'YYYY-MM') AS mes, SUM(monto) AS total")->groupBy('mes')->pluck('total', 'mes');
 
-        return $this->rellenarMeses($meses, fn($m) => ['ingresos' => (int) ($ingresos[$m] ?? 0), 'gastos' => (int) ($gastos[$m] ?? 0)]);
+        return $this->rellenarMeses($meses, fn ($m) => ['ingresos' => (int) ($ingresos[$m] ?? 0), 'gastos' => (int) ($gastos[$m] ?? 0)]);
     }
 
     private function rellenarMeses(int $meses, callable $valor): array

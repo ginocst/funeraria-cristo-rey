@@ -13,6 +13,13 @@ interface IStock
      */
     public function reservar(int $solicitudId, array $items): void;
 
+    /**
+     * Comprueba que hoy alcance el stock, sin reservarlo. Lanza ReglaNegocioException si no.
+     *
+     * @param  array<int, int>  $items  producto_id => cantidad
+     */
+    public function verificarDisponible(array $items): void;
+
     /** Repone el stock reservado por una solicitud (cancelación o cambio de urna) */
     public function liberar(int $solicitudId, array $items, string $motivo): void;
 }

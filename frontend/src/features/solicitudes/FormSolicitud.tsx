@@ -53,69 +53,76 @@ const CEMENTERIOS = [
   "Crematorio de Temuco",
 ];
 
-const esquema = z
-  .object({
-    expediente_id: z
-      .number({ message: "Seleccione el expediente" })
-      .int()
-      .positive("Seleccione el expediente"),
-    sucursal_id: z
-      .number({ message: "Seleccione la sucursal" })
-      .int()
-      .positive(),
-    velatorio_inicio: z.string().min(1, "Indique el inicio del velatorio"),
-    lugar_velatorio: z
-      .string()
-      .trim()
-      .min(3, "Indique dónde será el velatorio")
-      .max(200),
-    traslado_at: z.string().min(1, "Indique la fecha y hora del traslado"),
-    lugar_sepultura: z
-      .string()
-      .trim()
-      .min(3, "Indique dónde será sepultado")
-      .max(200),
-    sepultura_detalle: z.string().max(200).optional(),
-    mensaje: z.string().max(2000).optional(),
-    valor_servicio: z
-      .number({ message: "Indique el valor" })
-      .int()
-      .min(0)
-      .max(100_000_000),
-    descuento: z.number().int().min(0),
-    productos: z
-      .array(
-        z.object({
-          producto_id: z.number().int().positive(),
-          cantidad: z.number().int().min(1).max(50),
-        }),
-      )
-      .min(1, "Agregue al menos la urna o ataúd"),
-    vehiculo_id: z
-      .number({ message: "Seleccione el vehículo" })
-      .int()
-      .positive("Seleccione el vehículo"),
-    equipo: z
-      .array(z.number().int())
-      .min(1, "Asigne al menos un operario")
-      .max(6),
-  })
-  .refine(
-    (d) =>
-      !d.traslado_at ||
-      !d.velatorio_inicio ||
-      d.traslado_at > d.velatorio_inicio,
-    {
-      path: ["traslado_at"],
-      message: "El traslado debe ser posterior al inicio del velatorio",
-    },
-  )
-  .refine((d) => d.descuento <= d.valor_servicio, {
-    path: ["descuento"],
-    message: "El descuento no puede superar el valor del servicio",
-  });
+const crearEsquema = (esUrna: (productoId: number) => boolean) =>
+  z
+    .object({
+      expediente_id: z
+        .number({ message: "Seleccione el expediente" })
+        .int()
+        .positive("Seleccione el expediente"),
+      sucursal_id: z
+        .number({ message: "Seleccione la sucursal" })
+        .int()
+        .positive(),
+      velatorio_inicio: z.string().min(1, "Indique el inicio del velatorio"),
+      lugar_velatorio: z
+        .string()
+        .trim()
+        .min(3, "Indique dónde será el velatorio")
+        .max(200),
+      traslado_at: z.string().min(1, "Indique la fecha y hora del traslado"),
+      lugar_sepultura: z
+        .string()
+        .trim()
+        .min(3, "Indique dónde será sepultado")
+        .max(200),
+      sepultura_detalle: z.string().max(200).optional(),
+      mensaje: z.string().max(2000).optional(),
+      valor_servicio: z
+        .number({ message: "Indique el valor" })
+        .int()
+        .min(0)
+        .max(100_000_000),
+      descuento: z.number().int().min(0),
+      productos: z
+        .array(
+          z.object({
+            producto_id: z.number().int().positive(),
+            cantidad: z.number().int().min(1).max(50),
+          }),
+        )
+        .refine(
+          (lista) => lista.some((it) => esUrna(it.producto_id)),
+          "Debe asignar al menos un ataúd o urna",
+        ),
+      vehiculo_id: z
+        .number({ message: "Seleccione el vehículo" })
+        .int()
+        .positive("Seleccione el vehículo"),
+      equipo: z
+        .array(z.number().int())
+        .min(1, "Asigne al menos un operario")
+        .max(6),
+    })
+    .refine(
+      (d) =>
+        !d.traslado_at ||
+        !d.velatorio_inicio ||
+        d.traslado_at > d.velatorio_inicio,
+      {
+        path: ["traslado_at"],
+        message: "El traslado debe ser posterior al inicio del velatorio",
+      },
+    )
+    .refine((d) => d.descuento <= d.valor_servicio, {
+      path: ["descuento"],
+      message: "El descuento no puede superar el valor del servicio",
+    });
 
-type Datos = z.infer<typeof esquema>;
+type Datos = z.infer<ReturnType<typeof crearEsquema>>;
+
+/** Tipos que cuentan como el ataúd o urna del servicio (se exige al menos uno) */
+const TIPOS_URNA: string[] = ["ataud", "urna", "urna_cremacion"];
 
 /**
  * Registro y edición de la solicitud de servicio. Muestra en vivo qué vehículos
@@ -166,6 +173,13 @@ export default function FormSolicitud() {
     enabled: !edicion && !params.get("expediente"),
   });
 
+  const porId = useMemo(
+    () => new Map((productos.data ?? []).map((p) => [p.id, p])),
+    [productos.data],
+  );
+  const esUrna = (pid: number) =>
+    TIPOS_URNA.includes(porId.get(pid)?.tipo ?? "");
+
   const {
     control,
     handleSubmit,
@@ -173,7 +187,10 @@ export default function FormSolicitud() {
     setValue,
     formState: { errors, isSubmitting },
   } = useForm<Datos>({
-    resolver: zodResolver(esquema),
+    // Mientras no cargue el catálogo no se puede saber el tipo: valida el servidor
+    resolver: zodResolver(
+      crearEsquema((pid) => !productos.data || esUrna(pid)),
+    ),
     defaultValues: {
       expediente_id:
         Number(params.get("expediente")) || (undefined as unknown as number),
@@ -257,13 +274,28 @@ export default function FormSolicitud() {
     enabled: !!trasladoIso,
   });
 
-  const porId = useMemo(
-    () => new Map((productos.data ?? []).map((p) => [p.id, p])),
-    [productos.data],
-  );
   const precioDe = (pid: number) => {
     const actual = solicitud.data?.productos.find((p) => p.id === pid);
     return actual?.pivot?.precio_unitario ?? porId.get(pid)?.precio ?? 0;
+  };
+  /** En una solicitud aceptada, las unidades que ya tiene reservadas siguen disponibles para ella */
+  const disponibleDe = (pid: number) => {
+    const reservado =
+      solicitud.data?.estado === "aceptada"
+        ? (solicitud.data.productos.find((p) => p.id === pid)?.pivot
+            ?.cantidad ?? 0)
+        : 0;
+    return (porId.get(pid)?.stock ?? 0) + reservado;
+  };
+  /** Mismas reglas que valida el servidor; aquí se avisa antes de enviar */
+  const problemaProductos = (lista: Datos["productos"]) => {
+    if (!productos.data) return null;
+    const falta = lista.find(
+      (it) => it.cantidad > disponibleDe(it.producto_id),
+    );
+    if (falta)
+      return `Stock insuficiente de ${porId.get(falta.producto_id)?.nombre}: quedan ${disponibleDe(falta.producto_id)} y se necesitan ${falta.cantidad}.`;
+    return null;
   };
   const totalProductos = (items ?? []).reduce(
     (a, it) => a + precioDe(it.producto_id) * (it.cantidad || 0),
@@ -281,6 +313,12 @@ export default function FormSolicitud() {
 
   const guardar = handleSubmit(async (d) => {
     setError(null);
+    const problema = problemaProductos(d.productos);
+    if (problema) {
+      setError(problema);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
     const cuerpo = {
       ...d,
       velatorio_inicio: desdeInputLocal(d.velatorio_inicio),
@@ -311,6 +349,9 @@ export default function FormSolicitud() {
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   });
+
+  const errorProductos =
+    errors.productos?.root?.message ?? errors.productos?.message;
 
   if (edicion && solicitud.isLoading) return <Skeleton height={500} />;
 
@@ -530,16 +571,18 @@ export default function FormSolicitud() {
 
           <Seccion
             titulo="Urna y elementos"
-            descripcion="El stock se descuenta recién cuando la solicitud se acepta."
+            descripcion="Incluya al menos un ataúd o urna. El stock se descuenta recién cuando la solicitud se acepta."
           >
-            {errors.productos?.message && (
+            {errorProductos && (
               <Alert severity="error" sx={{ mb: 2 }}>
-                {errors.productos.message}
+                {errorProductos}
               </Alert>
             )}
             <Stack spacing={1.5}>
               {lista.fields.map((f, i) => {
                 const p = porId.get(items?.[i]?.producto_id);
+                const sinStock =
+                  !!p && (items?.[i]?.cantidad ?? 1) > disponibleDe(p.id);
                 return (
                   <Stack
                     key={f.id}
@@ -580,14 +623,10 @@ export default function FormSolicitud() {
                       </Typography>
                       <Typography
                         variant="caption"
-                        color={
-                          p && p.stock < (items?.[i]?.cantidad ?? 1)
-                            ? "error"
-                            : "text.secondary"
-                        }
+                        color={sinStock ? "error" : "text.secondary"}
                       >
                         {p
-                          ? `${TIPOS_PRODUCTO[p.tipo]}, ${pesos(precioDe(p.id))}, stock ${p.stock}`
+                          ? `${TIPOS_PRODUCTO[p.tipo]}, ${pesos(precioDe(p.id))}, stock ${p.stock}${sinStock ? " (no alcanza)" : ""}`
                           : ""}
                       </Typography>
                     </Box>
@@ -600,10 +639,16 @@ export default function FormSolicitud() {
                           type="number"
                           label="Cant."
                           sx={{ width: 80 }}
+                          error={sinStock}
                           onChange={(e) =>
                             field.onChange(Number(e.target.value))
                           }
-                          slotProps={{ htmlInput: { min: 1, max: 50 } }}
+                          slotProps={{
+                            htmlInput: {
+                              min: 1,
+                              max: Math.min(50, p ? disponibleDe(p.id) : 50),
+                            },
+                          }}
                         />
                       )}
                     />
@@ -620,6 +665,7 @@ export default function FormSolicitud() {
                 options={(productos.data ?? []).filter(
                   (p) => !items?.some((it) => it.producto_id === p.id),
                 )}
+                getOptionDisabled={(p) => disponibleDe(p.id) === 0}
                 groupBy={(p) => TIPOS_PRODUCTO[p.tipo]}
                 getOptionLabel={(p) => `${p.nombre} (${p.codigo})`}
                 renderOption={({ key, ...props }, p) => (
@@ -646,6 +692,8 @@ export default function FormSolicitud() {
                   </li>
                 )}
                 value={null}
+                blurOnSelect
+                clearOnBlur
                 onChange={(_, p) =>
                   p && lista.append({ producto_id: p.id, cantidad: 1 })
                 }
