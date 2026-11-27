@@ -85,6 +85,30 @@ class Indicadores
         ];
     }
 
+    /**
+     * Movimientos uno por uno del mes, para las hojas de detalle del Excel.
+     * Usa los mismos filtros que mensual(), así las sumas coinciden con sus totales.
+     */
+    public function detalleMensual(string $mes): array
+    {
+        $ini = HoraLocal::inicioMesUtc($mes);
+        $inicioLocal = $ini->setTimezone(HoraLocal::zona());
+        $fin = $inicioLocal->addMonth()->utc();
+
+        return [
+            'pagos' => DB::table('pagos as p')->join('medios_pago as m', 'm.id', '=', 'p.medio_pago_id')
+                ->join('expedientes as e', 'e.id', '=', 'p.expediente_id')->join('clientes as c', 'c.id', '=', 'e.cliente_id')
+                ->leftJoin('comprobantes as co', 'co.pago_id', '=', 'p.id')->leftJoin('usuarios as u', 'u.id', '=', 'p.created_by')
+                ->where('p.fecha', '>=', $ini)->where('p.fecha', '<', $fin)->orderBy('p.fecha')->orderBy('p.id')
+                ->get(['p.fecha', 'co.folio', 'e.codigo', 'c.nombre as cliente', 'm.nombre as medio', 'p.tipo', 'p.referencia', 'u.nombre as registrado_por', 'p.monto']),
+            'gastos' => DB::table('gastos as g')->leftJoin('proveedores as pr', 'pr.id', '=', 'g.proveedor_id')
+                ->leftJoin('sucursales as su', 'su.id', '=', 'g.sucursal_id')->whereNull('g.deleted_at')
+                ->where('g.fecha', '>=', $inicioLocal->toDateString())->where('g.fecha', '<', $inicioLocal->addMonth()->toDateString())
+                ->orderBy('g.fecha')->orderBy('g.id')
+                ->get(['g.fecha', 'g.categoria', 'g.descripcion', 'pr.nombre as proveedor', 'su.nombre as sucursal', 'g.monto']),
+        ];
+    }
+
     private function serviciosEntre(CarbonImmutable $ini, CarbonImmutable $fin): int
     {
         return DB::table('solicitudes')->whereNull('deleted_at')->whereIn('estado', ['aceptada', 'ejecutada'])
@@ -99,7 +123,7 @@ class Indicadores
             ->selectRaw("to_char((traslado_at AT TIME ZONE 'UTC') AT TIME ZONE ?, 'YYYY-MM') AS mes, COUNT(*) AS total", [$zona])
             ->groupBy('mes')->pluck('total', 'mes');
 
-        return $this->rellenarMeses($meses, fn ($m) => (int) ($filas[$m] ?? 0));
+        return $this->rellenarMeses($meses, fn($m) => (int) ($filas[$m] ?? 0));
     }
 
     private function finanzasPorMes(int $meses): array
@@ -111,7 +135,7 @@ class Indicadores
         $gastos = DB::table('gastos')->whereNull('deleted_at')->where('fecha', '>=', $desde->toDateString())
             ->selectRaw("to_char(fecha, 'YYYY-MM') AS mes, SUM(monto) AS total")->groupBy('mes')->pluck('total', 'mes');
 
-        return $this->rellenarMeses($meses, fn ($m) => ['ingresos' => (int) ($ingresos[$m] ?? 0), 'gastos' => (int) ($gastos[$m] ?? 0)]);
+        return $this->rellenarMeses($meses, fn($m) => ['ingresos' => (int) ($ingresos[$m] ?? 0), 'gastos' => (int) ($gastos[$m] ?? 0)]);
     }
 
     private function rellenarMeses(int $meses, callable $valor): array

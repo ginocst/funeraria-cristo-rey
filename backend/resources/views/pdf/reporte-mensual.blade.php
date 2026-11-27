@@ -1,76 +1,42 @@
+@php($m = fn ($v) => '$'.number_format((int) $v, 0, ',', '.'))
 @extends('pdf.layout')
-@section('titulo', $pago->tipo === 'anulacion' ? 'Comprobante de anulación' : 'Comprobante de pago')
-@section('subtitulo', 'Folio '.$comprobante->folio)
+@section('titulo', 'Reporte mensual')
+@section('subtitulo', \Carbon\Carbon::createFromFormat('!Y-m', $mes)->locale('es')->translatedFormat('F \d\e Y'))
 @section('contenido')
-<table class="kv" width="100%">
-    <tr>
-        <td class="k">Folio</td>
-        <td><b>{{ $comprobante->folio }}</b></td>
-    </tr>
-    <tr>
-        <td class="k">Fecha</td>
-        <td>{{ \App\Shared\Infrastructure\HoraLocal::formato($pago->fecha) }}</td>
-    </tr>
-    <tr>
-        <td class="k">Expediente</td>
-        <td>{{ $expediente->codigo }} · Servicio de {{ $expediente->difunto->nombre }}</td>
-    </tr>
-    <tr>
-        <td class="k">Contratante</td>
-        <td>{{ $expediente->cliente->nombre }} · RUT {{ \App\Shared\Domain\Rut::formatear($expediente->cliente->rut) }}</td>
-    </tr>
-    <tr>
-        <td class="k">Medio de pago</td>
-        <td>{{ $pago->medioPago->nombre }}{{ $pago->referencia ? ' · Ref. '.$pago->referencia : '' }}</td>
-    </tr>
-    @if($pago->tipo === 'anulacion')
-    <tr>
-        <td class="k">Motivo de la anulación</td>
-        <td>{{ $pago->motivo_anulacion }}</td>
-    </tr>
-    @endif
-    <tr>
-        <td class="k">Registrado por</td>
-        <td>{{ $pago->registradoPor?->nombre ?? '—' }}</td>
-    </tr>
+<table width="100%" class="caja"><tr>
+    <td>Servicios<br><span class="total">{{ $totales['servicios'] }}</span></td>
+    <td>Ingresos<br><span class="total">{{ $m($totales['ingresos']) }}</span></td>
+    <td>Gastos<br><span class="total">{{ $m($totales['gastos']) }}</span></td>
+    <td>Resultado<br><span class="total">{{ $m($totales['resultado']) }}</span></td>
+</tr></table>
+
+<h2>Servicios del mes</h2>
+<table class="datos">
+    <tr><th>Expediente</th><th>Fallecido</th><th>Traslado</th><th>Sepultura</th><th class="num">Total</th><th class="num">Saldo</th></tr>
+    @forelse($servicios as $s)
+        <tr><td>{{ $s->codigo }}</td><td>{{ $s->difunto }}</td><td>{{ \App\Shared\Infrastructure\HoraLocal::formato(\Carbon\CarbonImmutable::parse($s->traslado_at, 'UTC')) }}</td>
+            <td>{{ $s->lugar_sepultura }}</td><td class="num">{{ $m($s->total) }}</td><td class="num">{{ $m($s->saldo) }}</td></tr>
+    @empty
+        <tr><td colspan="6">Sin servicios en el mes.</td></tr>
+    @endforelse
 </table>
 
-<table width="100%" style="margin-top:16px">
-    <tr>
-        <td width="56%"></td>
-        <td class="caja">
-            <table width="100%">
-                <tr>
-                    <td>{{ $pago->tipo === 'anulacion' ? 'Monto anulado' : 'Monto recibido' }}</td>
-                    <td class="num total">${{ number_format(abs($pago->monto), 0, ',', '.') }}</td>
-                </tr>
-                <tr>
-                    <td>Total del servicio</td>
-                    <td class="num">${{ number_format($resumen['total'], 0, ',', '.') }}</td>
-                </tr>
-                <tr>
-                    <td>Pagado a la fecha</td>
-                    <td class="num">${{ number_format($resumen['pagado'], 0, ',', '.') }}</td>
-                </tr>
-                <tr>
-                    <td>Saldo restante</td>
-                    <td class="num total">${{ number_format($resumen['saldo'], 0, ',', '.') }}</td>
-                </tr>
-            </table>
-        </td>
-    </tr>
-</table>
+<table width="100%"><tr>
+<td width="50%" style="vertical-align:top; padding-right:8px">
+    <h2>Ingresos por medio de pago</h2>
+    <table class="datos"><tr><th>Medio</th><th class="num">Pagos</th><th class="num">Total</th></tr>
+        @foreach($ingresos_por_medio as $r)<tr><td>{{ $r->medio }}</td><td class="num">{{ $r->cantidad }}</td><td class="num">{{ $m($r->total) }}</td></tr>@endforeach
+    </table>
+</td>
+<td width="50%" style="vertical-align:top; padding-left:8px">
+    <h2>Gastos por categoría</h2>
+    <table class="datos"><tr><th>Categoría</th><th class="num">Registros</th><th class="num">Total</th></tr>
+        @foreach($gastos_por_categoria as $r)<tr><td>{{ $r->categoria }}</td><td class="num">{{ $r->cantidad }}</td><td class="num">{{ $m($r->total) }}</td></tr>@endforeach
+    </table>
+</td></tr></table>
 
-<p class="sub" style="margin-top:18px">Comprobante interno de control con copia digital para la familia y para la funeraria. No reemplaza la boleta o factura tributaria.</p>
-
-<table class="firma">
-    <tr>
-        <td>
-            <div class="linea">Funeraria Cristo Rey</div>
-        </td>
-        <td>
-            <div class="linea">Recibí conforme</div>
-        </td>
-    </tr>
+<h2>Urnas y ataúdes vendidos</h2>
+<table class="datos"><tr><th>Código</th><th>Producto</th><th class="num">Cantidad</th><th class="num">Monto</th></tr>
+    @foreach($urnas_vendidas as $u)<tr><td>{{ $u->codigo }}</td><td>{{ $u->nombre }}</td><td class="num">{{ $u->cantidad }}</td><td class="num">{{ $m($u->monto) }}</td></tr>@endforeach
 </table>
 @endsection
