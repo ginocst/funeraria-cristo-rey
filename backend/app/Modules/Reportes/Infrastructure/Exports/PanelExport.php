@@ -24,13 +24,13 @@ class PanelExport implements Export, WithMultipleSheets
             $this->resumen(),
             $this->conGrafico('Servicios por mes', 'Servicios aceptados o ejecutados, últimos 12 meses', [
                 'columnas' => [['Mes', 'texto'], ['Servicios', 'entero']],
-                'filas' => array_map(fn($m) => [Formato::mesCorto($m['mes']), $m['total']], $this->datos['servicios_por_mes']),
+                'filas' => array_map(fn ($m) => [Formato::mesCorto($m['mes']), $m['total']], $this->datos['servicios_por_mes']),
                 'totales' => [1],
             ], [1]),
             $conMontos ? $this->conGrafico('Ingresos y gastos', 'Pagos recibidos y gastos registrados, últimos 12 meses', [
                 'columnas' => [['Mes', 'texto'], ['Ingresos', 'moneda'], ['Gastos', 'moneda'], ['Resultado', 'moneda']],
                 'filas' => array_map(
-                    fn($m) => [Formato::mesCorto($m['mes']), $m['ingresos'], $m['gastos'], $m['ingresos'] - $m['gastos']],
+                    fn ($m) => [Formato::mesCorto($m['mes']), $m['ingresos'], $m['gastos'], $m['ingresos'] - $m['gastos']],
                     $this->datos['finanzas_por_mes'],
                 ),
                 'totales' => [1, 2, 3],
@@ -38,12 +38,12 @@ class PanelExport implements Export, WithMultipleSheets
             $this->conGrafico('Urnas más elegidas', 'Unidades en los últimos 12 meses', [
                 'columnas' => [['Producto', 'texto'], ['Unidades', 'entero'], ...($conMontos ? [['Monto', 'moneda']] : [])],
                 'filas' => collect($this->datos['urnas_mas_vendidas'])
-                    ->map(fn($u) => [$u->nombre, (int) $u->cantidad, ...($conMontos ? [(int) $u->monto] : [])])->all(),
+                    ->map(fn ($u) => [$u->nombre, (int) $u->cantidad, ...($conMontos ? [(int) $u->monto] : [])])->all(),
                 'totales' => $conMontos ? [1, 2] : [1],
             ], [1]),
             $this->conGrafico('Solicitudes', 'Solicitudes por estado', [
                 'columnas' => [['Estado', 'texto'], ['Solicitudes', 'entero']],
-                'filas' => collect($this->datos['estados'])->map(fn($total, $estado) => [$estado, $total])->values()->all(),
+                'filas' => collect($this->datos['estados'])->map(fn ($total, $estado) => [$estado, $total])->values()->all(),
                 'totales' => [1],
             ], [1]),
         ]));
@@ -52,7 +52,7 @@ class PanelExport implements Export, WithMultipleSheets
     private function resumen(): HojaReporte
     {
         $k = $this->datos['kpis'];
-        $dato = fn(string $nombre, mixed $valor, string $tipo = 'entero') => [$nombre, ['valor' => $valor, 'tipo' => $tipo]];
+        $dato = fn (string $nombre, mixed $valor, string $tipo = 'entero') => [$nombre, ['valor' => $valor, 'tipo' => $tipo]];
 
         return new HojaReporte('Resumen', $this->titulo('Resumen del panel'), $this->subtitulo(), [
             [
@@ -77,7 +77,7 @@ class PanelExport implements Export, WithMultipleSheets
                 'titulo' => 'Stock crítico',
                 'columnas' => [['Producto', 'texto'], ['Código', 'texto'], ['Stock', 'entero'], ['Mínimo', 'entero']],
                 'filas' => collect($this->datos['stock_critico'])
-                    ->map(fn($p) => [$p->nombre, $p->codigo, (int) $p->stock, (int) $p->umbral_minimo])->all(),
+                    ->map(fn ($p) => [$p->nombre, $p->codigo, (int) $p->stock, (int) $p->umbral_minimo])->all(),
             ],
         ]);
     }
@@ -94,6 +94,6 @@ class PanelExport implements Export, WithMultipleSheets
 
     private function subtitulo(): string
     {
-        return 'Generado el ' . HoraLocal::formato(CarbonImmutable::now('UTC'));
+        return 'Generado el '.HoraLocal::formato(CarbonImmutable::now('UTC'));
     }
 }

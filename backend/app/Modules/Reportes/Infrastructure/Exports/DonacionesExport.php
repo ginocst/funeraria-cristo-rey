@@ -16,13 +16,13 @@ class DonacionesExport implements Export, WithMultipleSheets
 
     public function sheets(): array
     {
-        $grupo = fn(string $titulo, string $concepto, array $filas) => [
+        $grupo = fn (string $titulo, string $concepto, array $filas) => [
             'titulo' => $titulo,
             'columnas' => [[$concepto, 'texto'], ['Donaciones', 'entero'], ['Monto', 'moneda']],
-            'filas' => array_map(fn(array $r) => [$r['nombre'], $r['cantidad'], $r['monto']], $filas),
+            'filas' => array_map(fn (array $r) => [$r['nombre'], $r['cantidad'], $r['monto']], $filas),
             'totales' => [1, 2],
         ];
-        $subtitulo = Formato::mesLargo($this->datos['mes']) . ' · Generado el ' . HoraLocal::formato(CarbonImmutable::now('UTC'));
+        $subtitulo = Formato::mesLargo($this->datos['mes']).' · Generado el '.HoraLocal::formato(CarbonImmutable::now('UTC'));
 
         return [new HojaReporte('Donaciones', 'Funeraria Cristo Rey · Donaciones del mes', $subtitulo, [
             $grupo('Por organización', 'Organización', $this->datos['por_organizacion']),
@@ -30,7 +30,7 @@ class DonacionesExport implements Export, WithMultipleSheets
             [
                 'titulo' => 'Detalle',
                 'columnas' => [['Fecha', 'fecha'], ['Organización', 'texto'], ['Categoría', 'texto'], ['Motivo', 'texto'], ['Monto', 'moneda']],
-                'filas' => collect($this->datos['donaciones'])->map(fn($d) => [
+                'filas' => collect($this->datos['donaciones'])->map(fn ($d) => [
                     Date::PHPToExcel(CarbonImmutable::parse($d->fecha)),
                     $d->organizacion,
                     $d->categoria,

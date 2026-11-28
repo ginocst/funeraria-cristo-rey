@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Tests\Feature\Escenario;
@@ -34,7 +35,7 @@ it('genera el Excel mensual con sus hojas, totales y textos que no se ejecutan c
 
     expect($libro->getSheetNames())->toBe(['Reporte', 'Análisis', 'Trabajadores', 'Servicios', 'Pagos', 'Gastos', 'Urnas'])
         // Datos
-        ->and(collect($libro->getAllSheets())->sum(fn($hoja) => $hoja->getChartCount()))->toBe(0);
+        ->and(collect($libro->getAllSheets())->sum(fn ($hoja) => $hoja->getChartCount()))->toBe(0);
     // La primera hoja tiene las secciones del PDF
     $secciones = [
         'Indicadores del mes',
@@ -50,7 +51,7 @@ it('genera el Excel mensual con sus hojas, totales y textos que no se ejecutan c
     $gastos = $libro->getSheetByName('Gastos');
     expect($gastos->getCell('C5')->getValue())->toBe('=1+1')
         ->and($gastos->getCell('C5')->getDataType())->toBe('s')
-        ->and($gastos->getCell('F6')->getCalculatedValue())->toEqual(45000);
+        ->and($gastos->getCell('G6')->getCalculatedValue())->toEqual(45000);
 });
 
 it('cuenta en el reporte mensual los servicios y las ausencias de cada trabajador', function () {
@@ -64,7 +65,7 @@ it('cuenta en el reporte mensual los servicios y las ausencias de cada trabajado
     $solicitud = $this->actingAs($admin)->postJson('/api/solicitudes', $datos)->assertCreated()->json('id');
     Escenario::pagar($expediente, 1_000_000);
     $this->actingAs($admin)->postJson("/api/solicitudes/$solicitud/aceptar", [], ['Idempotency-Key' => 'rep-1'])->assertOk();
-    $mes = now('America/Santiago')->modify('+3 days')->format('Y-m');
+    $mes = Carbon::parse($datos['traslado_at'])->setTimezone('America/Santiago')->format('Y-m');
     DB::table('ausencias')->insert(['usuario_id' => $libre->id, 'tipo' => 'permiso', 'desde' => "$mes-01", 'hasta' => "$mes-02", 'created_at' => now(), 'updated_at' => now()]);
 
     $trabajadores = collect($this->actingAs($admin)->getJson("/api/reportes/mensual?mes=$mes")->assertOk()->json('trabajadores'))->keyBy('nombre');
@@ -96,8 +97,13 @@ it('cuenta las donaciones como gasto en el reporte mensual y en el panel', funct
 
     $excel = $this->get("/api/reportes/mensual.xlsx?mes=$mes")->assertOk();
     $gastos = IOFactory::load($excel->baseResponse->getFile()->getPathname())->getSheetByName('Gastos');
-    // La suma del detalle coincide con el total del mes
-    expect($gastos->getCell('F7')->getCalculatedValue())->toEqual(145000);
+    // La donación muestra su organización en una columna distinta a la del proveedor
+    expect([$gastos->getCell('D4')->getValue(), $gastos->getCell('E4')->getValue()])->toBe(['Proveedor', 'Organización'])
+        ->and($gastos->getCell('D6')->getValue())->toBe('—')
+        ->and($gastos->getCell('E6')->getValue())->toBe('Club')
+        ->and($gastos->getCell('E5')->getValue())->toBe('—')
+        // La suma del detalle coincide con el total del mes
+        ->and($gastos->getCell('G7')->getCalculatedValue())->toEqual(145000);
     $this->get("/api/reportes/mensual.pdf?mes=$mes")->assertOk();
 });
 

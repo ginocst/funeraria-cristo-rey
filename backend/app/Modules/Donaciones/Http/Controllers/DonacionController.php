@@ -62,7 +62,7 @@ class DonacionController extends Controller
         return [
             // Solo organizaciones activas; al editar se puede conservar la que ya tenía
             'organizacion_id' => ['required', 'integer', Rule::exists('organizaciones', 'id')->whereNull('deleted_at')
-                ->where(fn($q) => $q->where(fn($w) => $w->where('activo', true)->orWhere('id', $registro?->organizacion_id)))],
+                ->where(fn ($q) => $q->where(fn ($w) => $w->where('activo', true)->orWhere('id', $registro?->organizacion_id)))],
             'fecha' => ['required', 'date_format:Y-m-d', "before_or_equal:$hoy"],
             'monto' => ['required', 'integer', 'min:1', 'max:100000000'],
             'descripcion' => ['nullable', 'string', 'max:250'],

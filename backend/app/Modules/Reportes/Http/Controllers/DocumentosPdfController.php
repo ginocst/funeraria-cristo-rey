@@ -50,7 +50,7 @@ class DocumentosPdfController extends Controller
             'solicitud' => $s,
             'resumen' => $expedientes->resumenFinanciero($s->expediente_id),
             'presentacion' => $s->traslado_at?->copy()->subMinutes($parametros->entero('presentacion_previa_minutos')),
-        ], 'orden-servicio-' . $s->expediente->codigo . '.pdf');
+        ], 'orden-servicio-'.$s->expediente->codigo.'.pdf');
     }
 
     public function comprobante(int $id, IExpediente $expedientes): Response
@@ -63,7 +63,7 @@ class DocumentosPdfController extends Controller
             'pago' => $c->pago,
             'expediente' => $expediente,
             'resumen' => $expedientes->resumenFinanciero($expediente->id),
-        ], 'comprobante-' . $c->folio . '.pdf');
+        ], 'comprobante-'.$c->folio.'.pdf');
     }
 
     public function mensualJson(Request $request, Indicadores $indicadores): JsonResponse
@@ -92,7 +92,7 @@ class DocumentosPdfController extends Controller
         $datos = $this->datosPanel($request, $indicadores);
         $this->auditoria->registrar('panel_pdf', 'reportes');
 
-        return $this->pdf('pdf.panel', $datos, 'panel-' . $this->hoy() . '.pdf');
+        return $this->pdf('pdf.panel', $datos, 'panel-'.$this->hoy().'.pdf');
     }
 
     public function panelExcel(Request $request, Indicadores $indicadores): BinaryFileResponse
@@ -100,7 +100,7 @@ class DocumentosPdfController extends Controller
         $datos = $this->datosPanel($request, $indicadores);
         $this->auditoria->registrar('panel_excel', 'reportes');
 
-        return Excel::download(new PanelExport($datos), 'panel-' . $this->hoy() . '.xlsx');
+        return Excel::download(new PanelExport($datos), 'panel-'.$this->hoy().'.xlsx');
     }
 
     public function donacionesPdf(Request $request, ResumenDonaciones $resumen): Response
@@ -138,7 +138,7 @@ class DocumentosPdfController extends Controller
             ...$datos,
             'conMontos' => $conMontos,
             'estados' => collect(EstadoSolicitud::cases())
-                ->mapWithKeys(fn(EstadoSolicitud $e) => [$e->etiqueta() => (int) ($datos['solicitudes_por_estado'][$e->value] ?? 0)])->all(),
+                ->mapWithKeys(fn (EstadoSolicitud $e) => [$e->etiqueta() => (int) ($datos['solicitudes_por_estado'][$e->value] ?? 0)])->all(),
         ];
     }
 
@@ -154,7 +154,7 @@ class DocumentosPdfController extends Controller
 
     private function pdf(string $vista, array $datos, string $nombre): Response
     {
-        $logo = 'data:image/png;base64,' . base64_encode((string) file_get_contents(public_path('img/logo.png')));
+        $logo = 'data:image/png;base64,'.base64_encode((string) file_get_contents(public_path('img/logo.png')));
 
         return Pdf::loadView($vista, [...$datos, 'logo' => $logo])->setPaper('letter')->stream($nombre);
     }

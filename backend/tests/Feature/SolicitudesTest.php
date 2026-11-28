@@ -89,7 +89,7 @@ it('al cancelar una aceptada repone el stock y libera la asignación', function 
 function productoDePrueba(string $tipo, int $stock = 5, int $precio = 10000): int
 {
     return DB::table('productos')->insertGetId([
-        'codigo' => 'P-' . uniqid(),
+        'codigo' => 'P-'.uniqid(),
         'nombre' => "Producto $tipo",
         'tipo' => $tipo,
         'precio' => $precio,

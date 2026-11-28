@@ -28,6 +28,6 @@ class SalaVelatoria extends ModeloBase
     /** Incluye la dirección para que el equipo (y Google Maps) sepan dónde ir */
     protected function lugar(): Attribute
     {
-        return Attribute::get(fn() => "{$this->nombre}, {$this->direccion}");
+        return Attribute::get(fn () => "{$this->nombre}, {$this->direccion}");
     }
 }

@@ -72,7 +72,7 @@ return new class extends Migration
         foreach ($solicitudes as $s) {
             $cruzada = ! $s->deleted_at && in_array($s->estado, self::VIGENTES, true)
                 && DB::table('solicitudes')->where('sala_velatorio_id', $sala)->whereNull('deleted_at')->whereIn('estado', self::VIGENTES)
-                ->where('velatorio_inicio', '<', $s->traslado_at)->where('traslado_at', '>', $s->velatorio_inicio)->exists();
+                    ->where('velatorio_inicio', '<', $s->traslado_at)->where('traslado_at', '>', $s->velatorio_inicio)->exists();
             if (! $cruzada) {
                 DB::table('solicitudes')->where('id', $s->id)->update(['sala_velatorio_id' => $sala]);
             }
@@ -82,7 +82,7 @@ return new class extends Migration
     public function down(): void
     {
         DB::statement('ALTER TABLE solicitudes DROP CONSTRAINT solicitudes_sala_sin_traslape');
-        Schema::table('solicitudes', fn(Blueprint $table) => $table->dropConstrainedForeignId('sala_velatorio_id'));
+        Schema::table('solicitudes', fn (Blueprint $table) => $table->dropConstrainedForeignId('sala_velatorio_id'));
         Schema::dropIfExists('salas_velatorias');
     }
 };

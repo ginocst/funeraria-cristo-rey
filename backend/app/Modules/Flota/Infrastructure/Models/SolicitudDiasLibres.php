@@ -30,7 +30,7 @@ class SolicitudDiasLibres extends ModeloBase
     /** Último día libre: según los días aprobados o, mientras no se resuelva, los pedidos */
     protected function hasta(): Attribute
     {
-        return Attribute::get(fn() => $this->desde->copy()->addDays(($this->dias_aprobados ?? $this->dias) - 1)->toDateString());
+        return Attribute::get(fn () => $this->desde->copy()->addDays(($this->dias_aprobados ?? $this->dias) - 1)->toDateString());
     }
 
     /** @return BelongsTo<Usuario, $this> */

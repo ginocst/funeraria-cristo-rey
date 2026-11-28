@@ -40,7 +40,7 @@ class DisponibilidadController extends Controller
             ->where('au.activa', true)->whereNull('au.deleted_at')->where('au.inicio', '<', $fin)->where('au.fin', '>', $inicio)
             ->where('a.solicitud_id', '!=', $excluir)->pluck('au.usuario_id')->all();
 
-        $operarios = Usuario::where('activo', true)->orderBy('nombre')->get()->filter(fn(Usuario $u) => $u->rolPrincipal() === 'Operario')->values();
+        $operarios = Usuario::where('activo', true)->orderBy('nombre')->get()->filter(fn (Usuario $u) => $u->rolPrincipal() === 'Operario')->values();
         $ausentes = $disponibilidad->operariosAusentes($operarios->pluck('id')->all(), $inicio, $fin);
 
         $salasOcupadas = $request->filled('velatorio_inicio') ? $salas->ocupadas(
@@ -51,12 +51,12 @@ class DisponibilidadController extends Controller
 
         return response()->json([
             'salas' => SalaVelatoria::orderBy('id')->get()
-                ->map(fn(SalaVelatoria $s) => ['id' => $s->id, 'lugar' => $s->lugar, 'estado' => $s->estado, 'ocupada_por' => $salasOcupadas[$s->id] ?? null]),
+                ->map(fn (SalaVelatoria $s) => ['id' => $s->id, 'lugar' => $s->lugar, 'estado' => $s->estado, 'ocupada_por' => $salasOcupadas[$s->id] ?? null]),
             'inicio' => $inicio,
             'fin' => $fin,
             'vehiculos' => Vehiculo::where('activo', true)->orderBy('origen')->orderBy('nombre')->get(['id', 'nombre', 'tipo', 'patente', 'origen', 'proveedor_externo'])
-                ->map(fn($v) => [...$v->toArray(), 'ocupado' => $v->origen === 'propio' && in_array($v->id, $vehiculosOcupados)]),
-            'operarios' => $operarios->map(fn(Usuario $u) => [
+                ->map(fn ($v) => [...$v->toArray(), 'ocupado' => $v->origen === 'propio' && in_array($v->id, $vehiculosOcupados)]),
+            'operarios' => $operarios->map(fn (Usuario $u) => [
                 'id' => $u->id,
                 'nombre' => $u->nombre,
                 'ocupado' => in_array($u->id, $personalOcupado),

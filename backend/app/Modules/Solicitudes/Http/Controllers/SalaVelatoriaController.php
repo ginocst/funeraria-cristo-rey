@@ -29,7 +29,7 @@ class SalaVelatoriaController extends Controller
         $reservas = $this->salas->proximas()->groupBy('sala_velatorio_id');
 
         return response()->json(SalaVelatoria::orderBy('id')->get()
-            ->map(fn(SalaVelatoria $s) => [...$s->toArray(), 'reservas' => ($reservas[$s->id] ?? collect())->values()]));
+            ->map(fn (SalaVelatoria $s) => [...$s->toArray(), 'reservas' => ($reservas[$s->id] ?? collect())->values()]));
     }
 
     /** Disponible, en mantenimiento o fuera de servicio, con una nota que explique por qué */
@@ -44,7 +44,7 @@ class SalaVelatoriaController extends Controller
             $sala = SalaVelatoria::whereKey($id)->lockForUpdate()->firstOrFail();
             $programadas = $this->salas->proximas($id)->pluck('codigo');
             if ($datos['estado'] !== 'disponible' && $programadas->isNotEmpty()) {
-                throw ReglaNegocioException::conflicto('La sala tiene servicios programados (' . $programadas->implode(', ') . '). Cambie su lugar antes de sacarla de uso.', 'en_uso');
+                throw ReglaNegocioException::conflicto('La sala tiene servicios programados ('.$programadas->implode(', ').'). Cambie su lugar antes de sacarla de uso.', 'en_uso');
             }
             $antes = ['estado' => $sala->estado];
             $sala->update(['estado' => $datos['estado'], 'observaciones' => $datos['observaciones'] ?? null]);

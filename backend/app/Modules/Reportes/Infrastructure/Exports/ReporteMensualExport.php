@@ -48,7 +48,7 @@ class ReporteMensualExport implements Export, WithMultipleSheets
             [
                 'titulo' => 'Evolución de los últimos 6 meses',
                 'columnas' => [['Mes', 'texto'], ['Servicios', 'entero'], ['Ingresos', 'moneda'], ['Gastos', 'moneda']],
-                'filas' => $evolucion->map(fn(array $e) => [Formato::mesCorto($e['mes']), $e['total'], $e['ingresos'], $e['gastos']])->all(),
+                'filas' => $evolucion->map(fn (array $e) => [Formato::mesCorto($e['mes']), $e['total'], $e['ingresos'], $e['gastos']])->all(),
             ],
             [
                 'titulo' => 'Servicios del mes',
@@ -60,7 +60,7 @@ class ReporteMensualExport implements Export, WithMultipleSheets
                     ['Total', 'moneda'],
                     ['Saldo', 'moneda'],
                 ],
-                'filas' => collect($this->datos['servicios'])->map(fn($s) => [
+                'filas' => collect($this->datos['servicios'])->map(fn ($s) => [
                     $s->codigo,
                     $s->difunto,
                     $this->fechaHora($s->traslado_at),
@@ -73,26 +73,26 @@ class ReporteMensualExport implements Export, WithMultipleSheets
             [
                 'titulo' => 'Ingresos por medio de pago',
                 'columnas' => [['Medio de pago', 'texto'], ['Pagos', 'entero'], ['Total', 'moneda']],
-                'filas' => collect($this->datos['ingresos_por_medio'])->map(fn($r) => [$r->medio, (int) $r->cantidad, (int) $r->total])->all(),
+                'filas' => collect($this->datos['ingresos_por_medio'])->map(fn ($r) => [$r->medio, (int) $r->cantidad, (int) $r->total])->all(),
                 'totales' => [1, 2],
             ],
             [
                 'titulo' => 'Gastos por categoría',
                 'columnas' => [['Categoría', 'texto'], ['Registros', 'entero'], ['Total', 'moneda']],
-                'filas' => collect($this->datos['gastos_por_categoria'])->map(fn($r) => [$r->categoria, (int) $r->cantidad, (int) $r->total])->all(),
+                'filas' => collect($this->datos['gastos_por_categoria'])->map(fn ($r) => [$r->categoria, (int) $r->cantidad, (int) $r->total])->all(),
                 'totales' => [1, 2],
             ],
             [
                 'titulo' => 'Donaciones del mes (incluidas en los gastos)',
                 'columnas' => [['Organización', 'texto'], ['Donaciones', 'entero'], ['Monto', 'moneda']],
-                'filas' => array_map(fn(array $r) => [$r['nombre'], $r['cantidad'], $r['monto']], $this->datos['donaciones_por_organizacion']),
+                'filas' => array_map(fn (array $r) => [$r['nombre'], $r['cantidad'], $r['monto']], $this->datos['donaciones_por_organizacion']),
                 'totales' => [1, 2],
             ],
             $this->resumenTrabajadores('Trabajadores del mes'),
             [
                 'titulo' => 'Urnas y ataúdes vendidos',
                 'columnas' => [['Código', 'texto'], ['Producto', 'texto'], ['Cantidad', 'entero'], ['Monto', 'moneda']],
-                'filas' => collect($this->datos['urnas_vendidas'])->map(fn($u) => [$u->codigo, $u->nombre, (int) $u->cantidad, (int) $u->monto])->all(),
+                'filas' => collect($this->datos['urnas_vendidas'])->map(fn ($u) => [$u->codigo, $u->nombre, (int) $u->cantidad, (int) $u->monto])->all(),
                 'totales' => [2, 3],
             ],
         ]);
@@ -111,7 +111,7 @@ class ReporteMensualExport implements Export, WithMultipleSheets
                 ['Horas', 'decimal'],
                 ['Días ausente', 'entero'],
             ],
-            'filas' => collect($this->datos['trabajadores'])->map(fn(array $t) => [
+            'filas' => collect($this->datos['trabajadores'])->map(fn (array $t) => [
                 $t['nombre'],
                 $t['cargo'],
                 $t['servicios'],
@@ -130,7 +130,7 @@ class ReporteMensualExport implements Export, WithMultipleSheets
         // Un expediente puede tener más de un servicio en el mes: su saldo se cuenta una vez
         $expedientes = collect($this->datos['servicios'])->unique('codigo');
         $contratado = (int) $expedientes->sum('total');
-        $dato = fn(string $nombre, mixed $valor, string $tipo) => [$nombre, ['valor' => $valor, 'tipo' => $tipo]];
+        $dato = fn (string $nombre, mixed $valor, string $tipo) => [$nombre, ['valor' => $valor, 'tipo' => $tipo]];
 
         return $this->hoja('Análisis', 'Análisis del mes', [
             [
@@ -154,7 +154,7 @@ class ReporteMensualExport implements Export, WithMultipleSheets
                 'titulo' => 'Servicios por sucursal',
                 'columnas' => [['Sucursal', 'texto'], ['Servicios', 'entero'], ['Total contratado', 'moneda']],
                 'filas' => collect($this->datos['servicios'])->groupBy('sucursal')->sortKeys()
-                    ->map(fn(Collection $g, string $sucursal) => [$sucursal, $g->count(), (int) $g->unique('codigo')->sum('total')])
+                    ->map(fn (Collection $g, string $sucursal) => [$sucursal, $g->count(), (int) $g->unique('codigo')->sum('total')])
                     ->values()->all(),
                 'totales' => [1, 2],
             ],
@@ -167,7 +167,7 @@ class ReporteMensualExport implements Export, WithMultipleSheets
         return [
             'titulo' => $titulo,
             'columnas' => [[$concepto, 'texto'], [$cantidad, 'entero'], ['Total', 'moneda'], ['% del total', 'porcentaje']],
-            'filas' => $filas->map(fn($r) => [$r->{$campo}, (int) $r->cantidad, (int) $r->total, $this->parte((int) $r->total, $total)])->all(),
+            'filas' => $filas->map(fn ($r) => [$r->{$campo}, (int) $r->cantidad, (int) $r->total, $this->parte((int) $r->total, $total)])->all(),
             'totales' => [1, 2, 3],
         ];
     }
@@ -188,7 +188,7 @@ class ReporteMensualExport implements Export, WithMultipleSheets
                 ['Saldo', 'moneda'],
                 ['% pagado', 'porcentaje'],
             ],
-            'filas' => collect($this->datos['servicios'])->map(fn($s) => [
+            'filas' => collect($this->datos['servicios'])->map(fn ($s) => [
                 $s->codigo,
                 $s->difunto,
                 $s->cliente,
@@ -219,7 +219,7 @@ class ReporteMensualExport implements Export, WithMultipleSheets
                 ['Registrado por', 'texto'],
                 ['Monto', 'moneda'],
             ],
-            'filas' => collect($this->detalle['pagos'])->map(fn($p) => [
+            'filas' => collect($this->detalle['pagos'])->map(fn ($p) => [
                 $this->fechaHora($p->fecha),
                 $p->folio,
                 $p->codigo,
@@ -241,19 +241,21 @@ class ReporteMensualExport implements Export, WithMultipleSheets
                 ['Fecha', 'fecha'],
                 ['Categoría', 'texto'],
                 ['Descripción', 'texto'],
-                ['Proveedor u organización', 'texto'],
+                ['Proveedor', 'texto'],
+                ['Organización', 'texto'],
                 ['Sucursal', 'texto'],
                 ['Monto', 'moneda'],
             ],
-            'filas' => collect($this->detalle['gastos'])->map(fn($g) => [
+            'filas' => collect($this->detalle['gastos'])->map(fn ($g) => [
                 Date::PHPToExcel(CarbonImmutable::parse($g->fecha)),
                 $g->categoria,
                 $g->descripcion,
                 $g->proveedor,
+                $g->organizacion,
                 $g->sucursal,
                 (int) $g->monto,
             ])->all(),
-            'totales' => [5],
+            'totales' => [6],
         ]]);
     }
 
@@ -264,7 +266,7 @@ class ReporteMensualExport implements Export, WithMultipleSheets
 
         return $this->hoja('Urnas', 'Urnas y ataúdes vendidos', [[
             'columnas' => [['Código', 'texto'], ['Producto', 'texto'], ['Cantidad', 'entero'], ['Monto', 'moneda'], ['% del monto', 'porcentaje']],
-            'filas' => $urnas->map(fn($u) => [$u->codigo, $u->nombre, (int) $u->cantidad, (int) $u->monto, $this->parte((int) $u->monto, $monto)])->all(),
+            'filas' => $urnas->map(fn ($u) => [$u->codigo, $u->nombre, (int) $u->cantidad, (int) $u->monto, $this->parte((int) $u->monto, $monto)])->all(),
             'totales' => [2, 3, 4],
         ]]);
     }
@@ -284,7 +286,7 @@ class ReporteMensualExport implements Export, WithMultipleSheets
                     ['Vehículo', 'texto'],
                     ['Estado', 'texto'],
                 ],
-                'filas' => collect($this->detalle['participaciones'])->map(fn($p) => [
+                'filas' => collect($this->detalle['participaciones'])->map(fn ($p) => [
                     $p->trabajador,
                     $p->codigo,
                     $p->difunto,
@@ -304,7 +306,7 @@ class ReporteMensualExport implements Export, WithMultipleSheets
 
     private function subtitulo(): string
     {
-        return Formato::mesLargo($this->datos['mes']) . ' · Generado el ' . HoraLocal::formato(CarbonImmutable::now('UTC'));
+        return Formato::mesLargo($this->datos['mes']).' · Generado el '.HoraLocal::formato(CarbonImmutable::now('UTC'));
     }
 
     /** Fecha UTC de la base convertida a hora local, como número de fecha de Excel */

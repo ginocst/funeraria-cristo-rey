@@ -58,7 +58,7 @@ it('la base de datos impide el cruce aunque se salte la aplicación', function (
     $segunda = velar($this, 'Domicilio particular', '+10 days 15:00')->json('id');
     $sala = DB::table('solicitudes')->where('id', $primera)->value('sala_velatorio_id');
 
-    expect(fn() => DB::table('solicitudes')->where('id', $segunda)->update(['sala_velatorio_id' => $sala]))
+    expect(fn () => DB::table('solicitudes')->where('id', $segunda)->update(['sala_velatorio_id' => $sala]))
         ->toThrow(QueryException::class, 'solicitudes_sala_sin_traslape');
 });
 

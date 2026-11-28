@@ -104,7 +104,7 @@ class GestionDiasLibres
     private function exigirSinPendiente(int $usuarioId, string $desde, string $hasta): void
     {
         $cruzada = SolicitudDiasLibres::where('usuario_id', $usuarioId)->where('estado', 'pendiente')->where('desde', '<=', $hasta)->get()
-            ->contains(fn(SolicitudDiasLibres $s) => $s->hasta >= $desde);
+            ->contains(fn (SolicitudDiasLibres $s) => $s->hasta >= $desde);
         if ($cruzada) {
             throw ReglaNegocioException::conflicto('Ya tiene una solicitud pendiente en esas fechas.', 'pendiente');
         }
@@ -122,7 +122,7 @@ class GestionDiasLibres
             ->where('s.estado', 'aceptada')->whereNull('s.deleted_at')
             ->where('a.inicio', '<', $fin)->where('a.fin', '>', $inicio)->orderBy('a.inicio')->pluck('e.codigo');
         if ($codigos->isNotEmpty()) {
-            throw ReglaNegocioException::conflicto('La persona tiene servicios confirmados en esas fechas (' . $codigos->implode(', ') . '). Cambie el equipo antes de aprobar.', 'servicios');
+            throw ReglaNegocioException::conflicto('La persona tiene servicios confirmados en esas fechas ('.$codigos->implode(', ').'). Cambie el equipo antes de aprobar.', 'servicios');
         }
     }
 

@@ -17,7 +17,7 @@ class ResumenDonaciones
             ->join('categorias_organizacion as c', 'c.id', '=', 'o.categoria_id')
             ->whereNull('d.deleted_at')
             ->where('d.fecha', '>=', $inicio->toDateString())->where('d.fecha', '<', $inicio->addMonth()->toDateString())
-            ->when($organizacionId, fn($q) => $q->where('d.organizacion_id', $organizacionId))
+            ->when($organizacionId, fn ($q) => $q->where('d.organizacion_id', $organizacionId))
             ->orderBy('d.fecha')->orderBy('d.id')
             ->get(['d.id', 'd.fecha', 'o.id as organizacion_id', 'o.nombre as organizacion', 'c.nombre as categoria', 'd.descripcion', 'd.monto']);
 
@@ -34,7 +34,7 @@ class ResumenDonaciones
     private function agrupar(Collection $donaciones, string $campo): array
     {
         return $donaciones->groupBy($campo)
-            ->map(fn(Collection $grupo, string $nombre) => ['nombre' => $nombre, 'cantidad' => $grupo->count(), 'monto' => (int) $grupo->sum('monto')])
+            ->map(fn (Collection $grupo, string $nombre) => ['nombre' => $nombre, 'cantidad' => $grupo->count(), 'monto' => (int) $grupo->sum('monto')])
             ->sortBy([['monto', 'desc'], ['nombre', 'asc']])->values()->all();
     }
 }

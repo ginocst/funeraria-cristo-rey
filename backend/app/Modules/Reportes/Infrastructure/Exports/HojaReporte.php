@@ -50,7 +50,7 @@ class HojaReporte implements Export, WithEvents, WithTitle
 
     public function registerEvents(): array
     {
-        return [AfterSheet::class => fn(AfterSheet $evento) => $this->dibujar($evento->sheet->getDelegate())];
+        return [AfterSheet::class => fn (AfterSheet $evento) => $this->dibujar($evento->sheet->getDelegate())];
     }
 
     /** El título ocupa el ancho de las tablas; sin combinar, puede seguir sobre las columnas vacías */
@@ -61,7 +61,7 @@ class HojaReporte implements Export, WithEvents, WithTitle
 
     private function dibujar(Worksheet $hoja): void
     {
-        $columnas = max(array_map(fn($t) => count($t['columnas']), $this->tablas));
+        $columnas = max(array_map(fn ($t) => count($t['columnas']), $this->tablas));
         $ultima = Coordinate::stringFromColumnIndex($columnas);
         $anchos = array_fill(1, $columnas, 12);
 
@@ -86,7 +86,7 @@ class HojaReporte implements Export, WithEvents, WithTitle
 
             $encabezado = $fila;
             foreach ($tabla['columnas'] as $i => [$nombre]) {
-                $this->texto($hoja, Coordinate::stringFromColumnIndex($i + 1) . $fila, $nombre);
+                $this->texto($hoja, Coordinate::stringFromColumnIndex($i + 1).$fila, $nombre);
                 $anchos[$i + 1] = max($anchos[$i + 1], mb_strlen($nombre) + 4);
             }
             $estilo = $hoja->getStyle("A{$fila}:{$fin}{$fila}");
@@ -103,7 +103,7 @@ class HojaReporte implements Export, WithEvents, WithTitle
                     if (is_array($valor)) {
                         ['valor' => $valor, 'tipo' => $tipo] = $valor;
                     }
-                    $celda = Coordinate::stringFromColumnIndex($i + 1) . $fila;
+                    $celda = Coordinate::stringFromColumnIndex($i + 1).$fila;
                     $this->escribir($hoja, $celda, $valor, $tipo);
                     $largo = in_array($tipo, ['texto'], true) ? mb_strlen((string) $valor) + 2 : 16;
                     $anchos[$i + 1] = max($anchos[$i + 1], min($largo, 46));
@@ -134,14 +134,14 @@ class HojaReporte implements Export, WithEvents, WithTitle
                 $fila++;
             }
 
-            $hoja->getStyle("A{$encabezado}:{$fin}" . ($fila - 1))->getBorders()->getAllBorders()
+            $hoja->getStyle("A{$encabezado}:{$fin}".($fila - 1))->getBorders()->getAllBorders()
                 ->setBorderStyle(Border::BORDER_THIN)->getColor()->setRGB(self::BORDE);
 
             // En las hojas de una sola tabla: encabezado fijo y filtros
             if (count($this->tablas) === 1) {
-                $hoja->freezePane('A' . ($encabezado + 1));
+                $hoja->freezePane('A'.($encabezado + 1));
                 if ($tabla['filas'] !== []) {
-                    $hoja->setAutoFilter("A{$encabezado}:{$fin}" . ($primera + count($tabla['filas']) - 1));
+                    $hoja->setAutoFilter("A{$encabezado}:{$fin}".($primera + count($tabla['filas']) - 1));
                 }
             }
 

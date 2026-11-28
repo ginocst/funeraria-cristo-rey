@@ -123,13 +123,14 @@ class Indicadores
                 ->leftJoin('sucursales as su', 'su.id', '=', 'g.sucursal_id')->whereNull('g.deleted_at')
                 ->where('g.fecha', '>=', $inicioLocal->toDateString())->where('g.fecha', '<', $inicioLocal->addMonth()->toDateString())
                 ->orderBy('g.fecha')->orderBy('g.id')
-                ->get(['g.fecha', 'g.categoria', 'g.descripcion', 'pr.nombre as proveedor', 'su.nombre as sucursal', 'g.monto'])
-                // En el detalle de gastos, la organización que recibe ocupa el lugar del proveedor
-                ->concat($this->donaciones->mensual($mes)['donaciones']->map(fn($d) => (object) [
+                ->get(['g.fecha', 'g.categoria', 'g.descripcion', 'pr.nombre as proveedor', DB::raw('null as organizacion'), 'su.nombre as sucursal', 'g.monto'])
+                // Las donaciones también son gasto: se agregan al detalle con su organización y sin proveedor
+                ->concat($this->donaciones->mensual($mes)['donaciones']->map(fn ($d) => (object) [
                     'fecha' => $d->fecha,
                     'categoria' => self::DONACIONES,
                     'descripcion' => $d->descripcion,
-                    'proveedor' => $d->organizacion,
+                    'proveedor' => null,
+                    'organizacion' => $d->organizacion,
                     'sucursal' => null,
                     'monto' => $d->monto,
                 ]))
@@ -159,7 +160,7 @@ class Indicadores
         $ultimoDia = CarbonImmutable::parse($finFecha)->subDay()->toDateString();
 
         return DB::table('usuarios')->orderBy('nombre')->get(['id', 'nombre', 'activo', 'deleted_at'])
-            ->filter(fn($u) => $participaciones->has($u->id) || $ausencias->has($u->id)
+            ->filter(fn ($u) => $participaciones->has($u->id) || $ausencias->has($u->id)
                 || ($u->activo && ! $u->deleted_at && in_array($cargos[$u->id] ?? null, ['Operario', 'Coordinador'], true)))
             ->map(function ($u) use ($participaciones, $ausencias, $cargos, $iniFecha, $ultimoDia) {
                 $propias = $participaciones->get($u->id, collect());
@@ -171,7 +172,7 @@ class Indicadores
                     'servicios' => $propias->count(),
                     'conductor' => $propias->where('funcion', 'conductor')->count(),
                     'apoyo' => $propias->where('funcion', 'apoyo')->count(),
-                    'horas' => round($propias->sum(fn($p) => (strtotime($p->fin) - strtotime($p->inicio)) / 3600), 1),
+                    'horas' => round($propias->sum(fn ($p) => (strtotime($p->fin) - strtotime($p->inicio)) / 3600), 1),
                     'dias_ausente' => $this->diasAusente($ausencias->get($u->id, collect()), $iniFecha, $ultimoDia),
                 ];
             })
@@ -210,7 +211,7 @@ class Indicadores
         $ultimo = $iniMesUtc->setTimezone(HoraLocal::zona());
         $finanzas = $this->finanzasPorMes($meses, $ultimo);
 
-        return array_map(fn(array $s, array $f) => [...$s, ...$f], $this->serviciosPorMes($meses, $ultimo), $finanzas);
+        return array_map(fn (array $s, array $f) => [...$s, ...$f], $this->serviciosPorMes($meses, $ultimo), $finanzas);
     }
 
     private function serviciosPorMes(int $meses, ?CarbonImmutable $ultimoMes = null): array
@@ -221,7 +222,7 @@ class Indicadores
             ->selectRaw("to_char((traslado_at AT TIME ZONE 'UTC') AT TIME ZONE ?, 'YYYY-MM') AS mes, COUNT(*) AS total", [$zona])
             ->groupBy('mes')->pluck('total', 'mes');
 
-        return $this->rellenarMeses($meses, fn($m) => (int) ($filas[$m] ?? 0), $ultimoMes);
+        return $this->rellenarMeses($meses, fn ($m) => (int) ($filas[$m] ?? 0), $ultimoMes);
     }
 
     private function finanzasPorMes(int $meses, ?CarbonImmutable $ultimoMes = null): array
@@ -235,7 +236,7 @@ class Indicadores
         $donaciones = DB::table('donaciones')->whereNull('deleted_at')->where('fecha', '>=', $desde->toDateString())
             ->selectRaw("to_char(fecha, 'YYYY-MM') AS mes, SUM(monto) AS total")->groupBy('mes')->pluck('total', 'mes');
 
-        return $this->rellenarMeses($meses, fn($m) => [
+        return $this->rellenarMeses($meses, fn ($m) => [
             'ingresos' => (int) ($ingresos[$m] ?? 0),
             'gastos' => (int) ($gastos[$m] ?? 0) + (int) ($donaciones[$m] ?? 0),
         ], $ultimoMes);

@@ -81,13 +81,13 @@ class Solicitud extends ModeloBase
     /** @return array<int, int> producto_id => cantidad */
     public function itemsProductos(): array
     {
-        return $this->productos->mapWithKeys(fn($p) => [$p->id => (int) $p->pivot->cantidad])->all();
+        return $this->productos->mapWithKeys(fn ($p) => [$p->id => (int) $p->pivot->cantidad])->all();
     }
 
     public function getTotalAttribute(): int
     {
         $productos = $this->relationLoaded('productos')
-            ? $this->productos->sum(fn($p) => $p->pivot->cantidad * $p->pivot->precio_unitario)
+            ? $this->productos->sum(fn ($p) => $p->pivot->cantidad * $p->pivot->precio_unitario)
             : (int) $this->productos()->sum(DB::raw('producto_solicitud.cantidad * producto_solicitud.precio_unitario'));
 
         return (int) $this->valor_servicio - (int) $this->descuento + (int) $productos;
