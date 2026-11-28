@@ -56,7 +56,7 @@ export default function Gastos() {
   return (
     <PantallaCrud<Gasto, typeof esquema>
       titulo="Gastos"
-      descripcion="Combustible, mantenciones, compras, remuneraciones y otros. Se descuentan de los ingresos en el panel y en el reporte mensual."
+      descripcion="Combustible, mantenciones, compras, remuneraciones y otros. Se descuentan de los ingresos en el panel y en el reporte mensual, junto con las donaciones (que se registran en su sección)."
       singular="Gasto"
       recurso="gastos"
       buscar="Buscar en la descripción"

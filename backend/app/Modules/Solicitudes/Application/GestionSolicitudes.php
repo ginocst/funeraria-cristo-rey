@@ -34,6 +34,7 @@ class GestionSolicitudes
         private IEventos $eventos,
         private IAuditoria $auditoria,
         private Parametros $parametros,
+        private ReservaSalas $salas,
     ) {}
 
     /** Crear la solicitud. Queda «en revisión»; los recursos aún no se reservan */
@@ -47,7 +48,9 @@ class GestionSolicitudes
                 throw new ReglaNegocioException('El expediente está cerrado o anulado.');
             }
             $this->validarProductos($datos['productos']);
-            $solicitud = Solicitud::create([...$this->camposSolicitud($datos), 'expediente_id' => $expediente->id, 'estado' => EstadoSolicitud::EnRevision]);
+            $campos = $this->camposSolicitud($datos);
+            $campos = $this->conSala($campos, null);
+            $solicitud = Solicitud::create([...$campos, 'expediente_id' => $expediente->id, 'estado' => EstadoSolicitud::EnRevision]);
             $this->guardarProductos($solicitud, $datos['productos']);
             $this->guardarAsignacion($solicitud, $datos);
             $this->auditoria->registrar('crear', 'solicitudes', $solicitud->id, null, $solicitud->toArray());
@@ -83,7 +86,9 @@ class GestionSolicitudes
             $this->validarProductos($datos['productos']);
 
             $nuevoEstado = $estado === EstadoSolicitud::ConObservaciones ? EstadoSolicitud::EnRevision : $estado;
-            $solicitud->update([...$this->camposSolicitud($datos), 'estado' => $nuevoEstado]);
+            $campos = $this->camposSolicitud($datos);
+            $campos = $this->conSala($campos, $id);
+            $solicitud->update([...$campos, 'estado' => $nuevoEstado]);
             $this->guardarProductos($solicitud, $datos['productos']);
             $this->guardarAsignacion($solicitud, $datos);
 
@@ -120,15 +125,22 @@ class GestionSolicitudes
             $porcentaje = $this->parametros->entero('abono_minimo_pct');
             if (! PoliticaReserva::abonoMinimoCumplido($resumen['total'], $resumen['pagado'], $porcentaje)) {
                 $minimo = PoliticaReserva::abonoMinimoRequerido($resumen['total'], $porcentaje);
-                throw new ReglaNegocioException('Falta el abono mínimo: se requieren $'.number_format($minimo, 0, ',', '.')
-                    .' ('.$porcentaje.' %) y hay $'.number_format($resumen['pagado'], 0, ',', '.').' pagados.', 'abono_minimo');
+                throw new ReglaNegocioException('Falta el abono mínimo: se requieren $' . number_format($minimo, 0, ',', '.')
+                    . ' (' . $porcentaje . ' %) y hay $' . number_format($resumen['pagado'], 0, ',', '.') . ' pagados.', 'abono_minimo');
             }
 
             $this->validarUrna($solicitud->itemsProductos());
+            // También cubre las solicitudes registradas antes de controlar las salas
+            $sala = $this->salas->reservar(
+                $solicitud->lugar_velatorio,
+                $solicitud->velatorio_inicio->toImmutable(),
+                $solicitud->traslado_at->toImmutable(),
+                $solicitud->id,
+            );
             $this->stock->reservar($solicitud->id, $solicitud->itemsProductos());
             $this->disponibilidad->activarAsignacion($solicitud->id);
 
-            $solicitud->update(['estado' => EstadoSolicitud::Aceptada, 'evaluada_por' => Auth::id(), 'evaluada_at' => now()]);
+            $solicitud->update(['estado' => EstadoSolicitud::Aceptada, 'sala_velatorio_id' => $sala?->id, 'evaluada_por' => Auth::id(), 'evaluada_at' => now()]);
             $solicitud->expediente->update(['estado' => 'en_servicio']);
             $this->auditoria->registrar('aceptar', 'solicitudes', $solicitud->id, ['estado' => 'en_revision'], ['estado' => 'aceptada']);
             $this->eventos->publicar('solicitud.aceptada', ['solicitud_id' => $solicitud->id, 'codigo' => $solicitud->expediente->codigo, 'equipo' => $this->equipoIds($solicitud->id)]);
@@ -216,6 +228,14 @@ class GestionSolicitudes
             'sepultura_detalle' => $d['sepultura_detalle'] ?? null,
             'mensaje' => $d['mensaje'] ?? null,
         ];
+    }
+
+    /** Si el lugar es una sala propia, la reserva y deja escrito su nombre y dirección */
+    private function conSala(array $campos, ?int $solicitudId): array
+    {
+        $sala = $this->salas->reservar($campos['lugar_velatorio'], $campos['velatorio_inicio'], $campos['traslado_at'], $solicitudId);
+
+        return [...$campos, 'sala_velatorio_id' => $sala?->id, ...($sala ? ['lugar_velatorio' => $sala->lugar] : [])];
     }
 
     /** Al menos un ataúd o urna, y stock suficiente de todo lo pedido */

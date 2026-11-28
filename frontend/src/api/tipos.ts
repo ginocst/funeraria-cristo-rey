@@ -381,6 +381,62 @@ export type Ausencia = {
   usuario?: { id: number; nombre: string };
 };
 
+export type CategoriaOrganizacion = {
+  id: number;
+  nombre: string;
+  descripcion: string | null;
+  organizaciones_count: number;
+};
+
+export type Organizacion = {
+  id: number;
+  categoria_id: number;
+  nombre: string;
+  contacto: string | null;
+  telefono: string | null;
+  email: string | null;
+  notas: string | null;
+  activo: boolean;
+  categoria?: { id: number; nombre: string };
+  donaciones_count: number;
+  total_donado: number | string | null;
+};
+
+export type Donacion = {
+  id: number;
+  organizacion_id: number;
+  fecha: string;
+  monto: number;
+  descripcion: string | null;
+  organizacion?: { id: number; nombre: string };
+};
+
+export type TotalDonaciones = {
+  nombre: string;
+  cantidad: number;
+  monto: number;
+};
+
+export type ResumenDonaciones = {
+  mes: string;
+  totales: { cantidad: number; monto: number };
+  por_organizacion: TotalDonaciones[];
+  por_categoria: TotalDonaciones[];
+};
+
+export type SolicitudDiasLibres = {
+  id: number;
+  usuario_id: number;
+  desde: string;
+  hasta: string;
+  dias: number;
+  motivo: string;
+  estado: "pendiente" | "aprobada" | "rechazada";
+  dias_aprobados: number | null;
+  motivo_rechazo: string | null;
+  usuario?: { id: number; nombre: string };
+};
+
 export type Usuario = {
   id: number;
   nombre: string;
@@ -457,7 +513,38 @@ export type EventoCalendario = {
   vehiculo?: string | null;
 };
 
+export type EstadoSala = "disponible" | "mantenimiento" | "fuera_de_servicio";
+
+export type SalaVelatoria = {
+  id: number;
+  nombre: string;
+  direccion: string;
+  /** Nombre y dirección: así queda escrito como lugar del velatorio */
+  lugar: string;
+  capacidad: number | null;
+  estado: EstadoSala;
+  observaciones: string | null;
+};
+
+export type SalaConAgenda = SalaVelatoria & {
+  reservas: {
+    solicitud_id: number;
+    codigo: string;
+    difunto: string;
+    estado: EstadoSolicitud;
+    velatorio_inicio: string;
+    traslado_at: string;
+  }[];
+};
+
 export type Disponibilidad = {
+  /** Salas propias; 'ocupada_por' es el código del expediente que la usa en ese horario */
+  salas: {
+    id: number;
+    lugar: string;
+    estado: EstadoSala;
+    ocupada_por: string | null;
+  }[];
   inicio: string;
   fin: string;
   vehiculos: (Pick<
@@ -567,6 +654,17 @@ export type ReporteMensual = {
     categoria: string;
     total: number;
     cantidad: number;
+  }[];
+  donaciones_por_organizacion: TotalDonaciones[];
+  trabajadores: {
+    id: number;
+    nombre: string;
+    cargo: string;
+    servicios: number;
+    conductor: number;
+    apoyo: number;
+    horas: number;
+    dias_ausente: number;
   }[];
   urnas_vendidas: {
     id: number;

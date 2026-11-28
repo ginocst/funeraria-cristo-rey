@@ -29,6 +29,7 @@ import type {
   Expediente,
   FilaExpediente,
   Producto,
+  SalaVelatoria,
   Solicitud,
   Sucursal,
 } from "../../api/tipos";
@@ -38,13 +39,8 @@ import { TIPOS_PRODUCTO } from "../../components/Estados";
 import { useAvisar } from "../../components/Notificador";
 import { Seccion } from "../../components/Seccion";
 import { aInputLocal, desdeInputLocal, hora, pesos } from "../../lib/formato";
+import { buscarSala, ESTADOS_SALA } from "../salas/estados";
 
-const LUGARES_VELATORIO = [
-  "Sala Velatoria Cristo Rey, Temuco",
-  "Sala Velatoria Cristo Rey, Padre Las Casas",
-  "Domicilio particular",
-  "Capilla San Francisco, Temuco",
-];
 const CEMENTERIOS = [
   "Cementerio General de Temuco",
   "Cementerio de Padre Las Casas",
@@ -222,6 +218,19 @@ export default function FormSolicitud() {
         "equipo",
       ],
     });
+  const [velatorio, lugarVelatorio] = useWatch({
+    control,
+    name: ["velatorio_inicio", "lugar_velatorio"],
+  });
+  const salas = useQuery({
+    queryKey: ["salas-velatorias", "todas"],
+    queryFn: async () =>
+      (
+        await api.get<Pagina<SalaVelatoria>>("/salas-velatorias", {
+          params: { por_pagina: 100 },
+        })
+      ).data.data,
+  });
 
   const expediente = useQuery({
     queryKey: ["expediente", String(expedienteId)],
@@ -263,16 +272,35 @@ export default function FormSolicitud() {
 
   const trasladoIso =
     traslado && traslado.length >= 16 ? desdeInputLocal(traslado) : null;
+  const velatorioIso =
+    velatorio && velatorio.length >= 16 ? desdeInputLocal(velatorio) : null;
   const disponibilidad = useQuery({
-    queryKey: ["disponibilidad", trasladoIso, id],
+    queryKey: ["disponibilidad", velatorioIso, trasladoIso, id],
     queryFn: async () =>
       (
         await api.get<Disponibilidad>("/disponibilidad", {
-          params: { traslado_at: trasladoIso, excluir_solicitud: id },
+          params: {
+            velatorio_inicio: velatorioIso ?? undefined,
+            traslado_at: trasladoIso,
+            excluir_solicitud: id,
+          },
         })
       ).data,
     enabled: !!trasladoIso,
   });
+  /** Por qué no se puede usar esa sala en el horario elegido (vacío si se puede) */
+  const impedimento = (lugar: string) => {
+    const sala = buscarSala(salas.data, lugar);
+    if (!sala) return "";
+    if (sala.estado !== "disponible") return ESTADOS_SALA[sala.estado].nota;
+    const ocupante = disponibilidad.data?.salas.find(
+      (s) => s.id === sala.id,
+    )?.ocupada_por;
+    return ocupante
+      ? `ocupada en ese horario por el expediente ${ocupante}`
+      : "";
+  };
+  const problemaSala = impedimento(lugarVelatorio ?? "");
 
   const precioDe = (pid: number) => {
     const actual = solicitud.data?.productos.find((p) => p.id === pid);
@@ -334,9 +362,15 @@ export default function FormSolicitud() {
           })
         : await api.post<Solicitud>("/solicitudes", cuerpo);
       await Promise.all(
-        ["solicitudes", "solicitud", "expediente", "panel", "calendario"].map(
-          (k) => qc.invalidateQueries({ queryKey: [k] }),
-        ),
+        [
+          "solicitudes",
+          "solicitud",
+          "expediente",
+          "panel",
+          "calendario",
+          "salas-velatorias",
+          "disponibilidad",
+        ].map((k) => qc.invalidateQueries({ queryKey: [k] })),
       );
       avisar(
         edicion
@@ -457,15 +491,33 @@ export default function FormSolicitud() {
                 render={({ field }) => (
                   <Autocomplete
                     freeSolo
-                    options={LUGARES_VELATORIO}
+                    // Solo las salas de la funeraria: cualquier otro lugar se escribe a mano
+                    options={salas.data?.map((s) => s.lugar) ?? []}
+                    filterOptions={(opciones) => opciones}
+                    getOptionDisabled={(lugar) => !!impedimento(lugar)}
+                    renderOption={({ key, ...props }, lugar) => (
+                      <li key={key} {...props}>
+                        {lugar}
+                        {impedimento(lugar) ? ` (${impedimento(lugar)})` : ""}
+                      </li>
+                    )}
                     value={field.value}
                     onInputChange={(_, v) => field.onChange(v)}
                     renderInput={(p) => (
                       <TextField
                         {...p}
                         label="Lugar del velatorio"
-                        error={!!errors.lugar_velatorio}
-                        helperText={errors.lugar_velatorio?.message}
+                        error={!!errors.lugar_velatorio || !!problemaSala}
+                        helperText={
+                          errors.lugar_velatorio?.message ??
+                          (problemaSala
+                            ? `Sala ${problemaSala}`
+                            : !field.value
+                              ? "Elija una sala de la funeraria o escriba otro lugar"
+                              : buscarSala(salas.data, field.value)
+                                ? "Sala de la funeraria"
+                                : "Lugar externo: no se controla su disponibilidad")
+                        }
                       />
                     )}
                   />

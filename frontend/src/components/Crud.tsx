@@ -40,6 +40,10 @@ type Props<T extends ConId, S extends z.ZodType> = {
   accionesExtra?: ReactNode;
   accionesFila?: (fila: T) => ReactNode;
   sinEncabezado?: boolean;
+  /** El singular es femenino: «Nueva categoría», «Categoría creada» */
+  femenino?: boolean;
+  /** Otras consultas que muestran estos datos y deben actualizarse al cambiarlos */
+  invalidar?: string[];
 };
 
 /**
@@ -74,19 +78,31 @@ export function PantallaCrud<T extends ConId, S extends z.ZodType>(
     placeholderData: keepPreviousData,
   });
 
+  const nuevoTexto = `${p.femenino ? "Nueva" : "Nuevo"} ${p.singular.toLowerCase()}`;
+  const refrescar = () =>
+    Promise.all(
+      [p.recurso, ...(p.invalidar ?? [])].map((clave) =>
+        qc.invalidateQueries({ queryKey: [clave] }),
+      ),
+    );
+
   const guardar = async (datos: z.output<S>) => {
     if (editando === "nuevo") await api.post(`/${p.recurso}`, datos);
     else if (editando) await api.put(`/${p.recurso}/${editando.id}`, datos);
-    await qc.invalidateQueries({ queryKey: [p.recurso] });
-    avisar(editando === "nuevo" ? `${p.singular} creado` : "Cambios guardados");
+    await refrescar();
+    avisar(
+      editando === "nuevo"
+        ? `${p.singular} ${p.femenino ? "creada" : "creado"}`
+        : "Cambios guardados",
+    );
     setEditando(null);
   };
 
   const eliminar = useMutation({
     mutationFn: async (fila: T) => api.delete(`/${p.recurso}/${fila.id}`),
     onSuccess: async () => {
-      await qc.invalidateQueries({ queryKey: [p.recurso] });
-      avisar(`${p.singular} eliminado`);
+      await refrescar();
+      avisar(`${p.singular} ${p.femenino ? "eliminada" : "eliminado"}`);
       setEliminando(null);
     },
     onError: (e) => {
@@ -158,7 +174,7 @@ export function PantallaCrud<T extends ConId, S extends z.ZodType>(
                   startIcon={<AddRoundedIcon />}
                   onClick={() => setEditando("nuevo")}
                 >
-                  Nuevo {p.singular.toLowerCase()}
+                  {nuevoTexto}
                 </Button>
               )}
             </>
@@ -187,7 +203,7 @@ export function PantallaCrud<T extends ConId, S extends z.ZodType>(
               startIcon={<AddRoundedIcon />}
               onClick={() => setEditando("nuevo")}
             >
-              Nuevo {p.singular.toLowerCase()}
+              {nuevoTexto}
             </Button>
           )}
         </Stack>
@@ -214,7 +230,7 @@ export function PantallaCrud<T extends ConId, S extends z.ZodType>(
         abierto={editando !== null}
         titulo={
           editando === "nuevo"
-            ? `Nuevo ${p.singular.toLowerCase()}`
+            ? nuevoTexto
             : `Editar ${p.singular.toLowerCase()}`
         }
         esquema={p.esquema}

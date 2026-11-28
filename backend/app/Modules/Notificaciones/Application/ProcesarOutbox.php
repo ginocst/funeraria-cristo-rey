@@ -21,7 +21,7 @@ class ProcesarOutbox
             $eventos = Notificacion::where('estado', 'pendiente')->orderBy('id')->limit($limite)->lock('FOR UPDATE SKIP LOCKED')->get();
             foreach ($eventos as $evento) {
                 try {
-                    DB::transaction(fn () => $this->procesar($evento));
+                    DB::transaction(fn() => $this->procesar($evento));
                     $evento->update(['estado' => 'procesado', 'procesado_at' => now(), 'error' => null]);
                 } catch (Throwable $e) {
                     $reintentos = $evento->reintentos + 1;
@@ -38,32 +38,58 @@ class ProcesarOutbox
     {
         $p = $evento->payload;
         $cod = $p['codigo'] ?? '';
-        $enlaceSol = isset($p['solicitud_id']) ? '/solicitudes/'.$p['solicitud_id'] : null;
-        $enlacePagos = isset($p['expediente_id']) ? '/expedientes/'.$p['expediente_id'].'?pestana=pagos' : '/cobranza';
+        $enlaceSol = isset($p['solicitud_id']) ? '/solicitudes/' . $p['solicitud_id'] : null;
+        $enlacePagos = isset($p['expediente_id']) ? '/expedientes/' . $p['expediente_id'] . '?pestana=pagos' : '/cobranza';
 
         [$destinatarios, $tipo, $titulo, $mensaje, $enlace] = match ($evento->evento) {
             'solicitud.creada' => [$this->conRol('Administrador'), 'info', 'Nueva solicitud en revisión', "La solicitud del expediente $cod espera evaluación.", $enlaceSol],
             'solicitud.aceptada' => [$this->conRol('Coordinador')->merge($this->usuarios($p['equipo'] ?? [])), 'exito', 'Solicitud aceptada', "Se aceptó la solicitud del expediente $cod y se reservaron los recursos.", $enlaceSol],
-            'solicitud.observada' => [$this->conRol('Coordinador'), 'alerta', 'Solicitud con observaciones', "El expediente $cod tiene observaciones: ".($p['comentario'] ?? ''), $enlaceSol],
+            'solicitud.observada' => [$this->conRol('Coordinador'), 'alerta', 'Solicitud con observaciones', "El expediente $cod tiene observaciones: " . ($p['comentario'] ?? ''), $enlaceSol],
             'solicitud.no_aplica' => [$this->conRol('Coordinador'), 'alerta', 'Solicitud marcada «no aplica»', "El expediente $cod se cerró sin ejecución.", $enlaceSol],
             'solicitud.cancelada' => [$this->conRol('Administrador')->merge($this->usuarios($p['equipo'] ?? [])), 'alerta', 'Solicitud cancelada', "Se canceló la solicitud del expediente $cod y se liberaron los recursos.", $enlaceSol],
             'solicitud.modificada' => [$this->conRol('Administrador')->merge($this->usuarios($p['equipo'] ?? [])), 'info', 'Solicitud modificada', "Cambió la solicitud del expediente $cod.", $enlaceSol],
-            'stock.critico' => [$this->conRol('Administrador', 'Coordinador'), 'critico', 'Stock crítico', ($p['producto'] ?? 'Un producto').' quedó con '.($p['stock'] ?? 0).' unidades.', '/inventario'],
-            'pago.anulado' => [$this->conRol('Administrador'), 'alerta', 'Pago anulado', 'Se anuló un pago del expediente '.$cod.'. Motivo: '.($p['motivo'] ?? ''), $enlacePagos],
+            'stock.critico' => [$this->conRol('Administrador', 'Coordinador'), 'critico', 'Stock crítico', ($p['producto'] ?? 'Un producto') . ' quedó con ' . ($p['stock'] ?? 0) . ' unidades.', '/inventario'],
+            'pago.anulado' => [$this->conRol('Administrador'), 'alerta', 'Pago anulado', 'Se anuló un pago del expediente ' . $cod . '. Motivo: ' . ($p['motivo'] ?? ''), $enlacePagos],
             'cuota.atrasada' => [$this->conRol('Administrador', 'Coordinador'), 'critico', 'Cuota atrasada', "La cuota {$p['numero']} del expediente $cod venció sin pago.", $enlacePagos],
+            'dias_libres.solicitados' => [
+                $this->conRol('Administrador')->reject(fn(Usuario $u) => $u->id === $p['usuario_id']),
+                'info',
+                'Solicitud de días libres',
+                "{$p['nombre']} pide {$this->dias($p['dias'])} desde el {$p['desde']}. Motivo: {$p['motivo']}",
+                '/dias-libres'
+            ],
+            'dias_libres.aprobados' => [
+                $this->usuarios([$p['usuario_id']]),
+                'exito',
+                'Días libres aprobados',
+                "Días aprobados: {$p['dias']} de {$p['dias_pedidos']} pedidos, del {$p['desde']} al {$p['hasta']}.",
+                '/dias-libres'
+            ],
+            'dias_libres.rechazados' => [
+                $this->usuarios([$p['usuario_id']]),
+                'alerta',
+                'Días libres rechazados',
+                "No se aprobó su solicitud desde el {$p['desde']}. Motivo: {$p['motivo']}",
+                '/dias-libres'
+            ],
             default => [collect(), 'info', '', '', null],
         };
 
         foreach ($destinatarios->unique('id') as $u) {
-            // Quien no puede ver solicitudes (el equipo de operarios) va a su itinerario
+            // Quien no puede ver solicitudes (operarios) va a su itinerario
             $destino = $enlace !== null && str_starts_with($enlace, '/solicitudes/') && ! $u->tienePermiso('solicitudes.ver') ? '/itinerario' : $enlace;
             Aviso::create(['usuario_id' => $u->id, 'notificacion_id' => $evento->id, 'tipo' => $tipo, 'titulo' => $titulo, 'mensaje' => mb_substr($mensaje, 0, 400), 'enlace' => $destino]);
         }
     }
 
+    private function dias(int $n): string
+    {
+        return $n === 1 ? '1 día' : "$n días";
+    }
+
     private function conRol(string ...$roles)
     {
-        return Usuario::where('activo', true)->get()->filter(fn (Usuario $u) => $u->tieneRol(...$roles))->values();
+        return Usuario::where('activo', true)->get()->filter(fn(Usuario $u) => $u->tieneRol(...$roles))->values();
     }
 
     private function usuarios(array $ids)

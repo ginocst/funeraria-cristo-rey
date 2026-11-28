@@ -15,10 +15,13 @@ class DemoSeeder extends Seeder
     {
         if (DB::table('usuarios')->exists()) {
             $this->command?->warn('La base ya tiene usuarios: use "php artisan migrate:fresh --seed" para recargar la demostración.');
+            // Las donaciones de demostración se agregan solo si aún no hay ninguna categoría
+            $this->call(DonacionesDemoSeeder::class);
 
             return;
         }
         DB::unprepared(file_get_contents(database_path('sql/002_demo.sql')));
+        $this->call(DonacionesDemoSeeder::class);
         $this->command?->info('Demostración cargada. Usuarios: renato.osses@cristorey.test (Administrador), carla.fuentes@cristorey.test (Coordinador), pedro.soto@cristorey.test (Operario). Contraseña: CristoRey#2026!');
     }
 }

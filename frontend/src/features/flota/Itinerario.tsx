@@ -1,12 +1,25 @@
+import BeachAccessRoundedIcon from "@mui/icons-material/BeachAccessRounded";
+import DirectionsRoundedIcon from "@mui/icons-material/DirectionsRounded";
 import LocalShippingRoundedIcon from "@mui/icons-material/LocalShippingRounded";
 import PlaceRoundedIcon from "@mui/icons-material/PlaceRounded";
 import ScheduleRoundedIcon from "@mui/icons-material/ScheduleRounded";
-import { Alert, Box, Chip, Skeleton, Stack, Typography } from "@mui/material";
+import {
+  Alert,
+  Box,
+  Button,
+  Chip,
+  Link,
+  Skeleton,
+  Stack,
+  Typography,
+} from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
+import { Link as RouterLink } from "react-router-dom";
 import { api } from "../../api/cliente";
 import type { Ausencia, ItemItinerario } from "../../api/tipos";
 import { colores } from "../../app/tema";
 import { useSesion } from "../../auth/Sesion";
+import { P } from "../../auth/permisos";
 import { Encabezado } from "../../components/Encabezado";
 import { Vacio } from "../../components/Vacio";
 import {
@@ -17,13 +30,14 @@ import {
   hora,
   relativo,
 } from "../../lib/formato";
+import { enlaceRuta } from "../../lib/mapas";
 
 /**
  * Itinerario del operario: solo ve los servicios en que participa,
  * con la hora de presentación, el vehículo y el destino. Pensado para el teléfono
  */
 export default function Itinerario() {
-  const { sesion } = useSesion();
+  const { sesion, puede } = useSesion();
   const { data, isLoading } = useQuery({
     queryKey: ["itinerario"],
     queryFn: async () => (await api.get<ItemItinerario[]>("/itinerario")).data,
@@ -48,6 +62,18 @@ export default function Itinerario() {
       <Encabezado
         titulo="Mi itinerario"
         descripcion="Servicios en los que usted participa. Preséntese a la hora indicada con el vehículo asignado."
+        acciones={
+          puede(P.diasLibresSolicitar) && (
+            <Button
+              variant="outlined"
+              startIcon={<BeachAccessRoundedIcon />}
+              component={RouterLink}
+              to="/dias-libres"
+            >
+              Pedir días libres
+            </Button>
+          )
+        }
       />
       {mias.map((a) => (
         <Alert key={a.id} severity="info" sx={{ mb: 2 }}>
@@ -115,12 +141,24 @@ export default function Itinerario() {
                   icono={<PlaceRoundedIcon />}
                   titulo="Velatorio"
                   texto={`${i.lugar_velatorio} (desde el ${fecha(i.velatorio_inicio)} a las ${hora(i.velatorio_inicio)})`}
+                  ruta={enlaceRuta(i.lugar_velatorio)}
                 />
                 <Fila
                   icono={<PlaceRoundedIcon />}
                   titulo="Destino"
                   texto={`${i.lugar_sepultura}${i.sepultura_detalle ? `, ${i.sepultura_detalle}` : ""}`}
+                  ruta={enlaceRuta(i.lugar_sepultura)}
                 />
+                <Button
+                  variant="contained"
+                  fullWidth
+                  startIcon={<DirectionsRoundedIcon />}
+                  href={enlaceRuta(i.lugar_sepultura, i.lugar_velatorio)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Ver ruta del traslado
+                </Button>
                 <Fila
                   icono={<LocalShippingRoundedIcon />}
                   titulo="Vehículo"
@@ -157,10 +195,13 @@ function Fila({
   icono,
   titulo,
   texto,
+  ruta,
 }: {
   icono: React.ReactNode;
   titulo: string;
   texto: string;
+  /** Enlace para llegar al lugar */
+  ruta?: string;
 }) {
   return (
     <Stack
@@ -176,6 +217,17 @@ function Fila({
         <Typography variant="body2" sx={{ fontWeight: 500 }}>
           {texto}
         </Typography>
+        {ruta && (
+          <Link
+            href={ruta}
+            target="_blank"
+            rel="noopener noreferrer"
+            variant="body2"
+            aria-label={`Cómo llegar: ${titulo.toLowerCase()}`}
+          >
+            Cómo llegar
+          </Link>
+        )}
       </Box>
     </Stack>
   );

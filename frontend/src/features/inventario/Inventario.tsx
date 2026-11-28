@@ -1,5 +1,5 @@
 import AddPhotoAlternateRoundedIcon from "@mui/icons-material/AddPhotoAlternateRounded";
-import HeartBrokenRoundedIcon from "@mui/icons-material/HeartBrokenRounded";
+import ReportProblemOutlinedIcon from "@mui/icons-material/ReportProblemOutlined";
 import MoveToInboxRoundedIcon from "@mui/icons-material/MoveToInboxRounded";
 import PublicRoundedIcon from "@mui/icons-material/PublicRounded";
 import TuneRoundedIcon from "@mui/icons-material/TuneRounded";
@@ -495,7 +495,7 @@ export default function Inventario() {
                     onClick={() => setMerma(p)}
                     aria-label="Registrar merma"
                   >
-                    <HeartBrokenRoundedIcon fontSize="small" />
+                    <ReportProblemOutlinedIcon fontSize="small" />
                   </IconButton>
                 </Tooltip>
               )}

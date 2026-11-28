@@ -92,7 +92,7 @@ export default function Reportes() {
     <>
       <Encabezado
         titulo="Reporte mensual"
-        descripcion="Resumen para la gestión del mes: servicios realizados, ingresos por medio de pago, gastos por categoría y urnas vendidas."
+        descripcion="Resumen para la gestión del mes: servicios realizados, ingresos por medio de pago, gastos por categoría, urnas vendidas y trabajo del personal."
         acciones={
           <>
             <TextField
@@ -210,6 +210,70 @@ export default function Reportes() {
               </Table>
             </Seccion>
           </Box>
+          <Seccion
+            titulo="Donaciones por organización"
+            descripcion="Ya incluidas en los gastos del mes"
+          >
+            <Barras
+              filas={r.donaciones_por_organizacion.map((x) => ({
+                etiqueta: x.nombre,
+                valor: x.monto,
+              }))}
+            />
+          </Seccion>
+          <Seccion
+            titulo="Trabajadores"
+            descripcion="Servicios aceptados o ejecutados en que participa cada persona este mes"
+            sinRelleno
+          >
+            <Tabla
+              filas={r.trabajadores}
+              clave={(t) => t.id}
+              densa
+              vacio="No hay trabajadores registrados."
+              columnas={[
+                { id: "nom", titulo: "Trabajador", render: (t) => t.nombre },
+                {
+                  id: "car",
+                  titulo: "Cargo",
+                  ocultarEnMovil: true,
+                  render: (t) => t.cargo,
+                },
+                {
+                  id: "ser",
+                  titulo: "Servicios",
+                  alinear: "right",
+                  render: (t) => t.servicios,
+                },
+                {
+                  id: "con",
+                  titulo: "Conductor",
+                  alinear: "right",
+                  ocultarEnMovil: true,
+                  render: (t) => t.conductor,
+                },
+                {
+                  id: "apo",
+                  titulo: "Apoyo",
+                  alinear: "right",
+                  ocultarEnMovil: true,
+                  render: (t) => t.apoyo,
+                },
+                {
+                  id: "hor",
+                  titulo: "Horas",
+                  alinear: "right",
+                  render: (t) => t.horas.toLocaleString("es-CL"),
+                },
+                {
+                  id: "aus",
+                  titulo: "Días ausente",
+                  alinear: "right",
+                  render: (t) => t.dias_ausente,
+                },
+              ]}
+            />
+          </Seccion>
           <Seccion
             titulo={`Servicios de ${mesLargo(mes).toLowerCase()}`}
             sinRelleno

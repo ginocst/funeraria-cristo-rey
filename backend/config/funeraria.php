@@ -58,6 +58,8 @@ return [
         'solicitudes.eliminar' => ['Administrador'],
         'solicitudes.evaluar' => ['Administrador'],
 
+        'salas.gestionar' => ['Administrador'],
+
         'productos.ver' => ['Administrador', 'Coordinador', 'Operario'],
         'productos.crear' => ['Administrador', 'Coordinador'],
         'productos.editar' => ['Administrador', 'Coordinador'],
@@ -76,12 +78,17 @@ return [
         'ausencias.gestionar' => ['Administrador'],
         'itinerario.ver' => ['Operario', 'Coordinador', 'Administrador'],
 
+        'dias_libres.ver' => ['Operario', 'Coordinador', 'Administrador'],
+        'dias_libres.solicitar' => ['Operario', 'Coordinador'],
+        'dias_libres.evaluar' => ['Administrador'],
+
         'pagos.ver' => ['Administrador', 'Coordinador'],
         'pagos.registrar' => ['Administrador', 'Coordinador'],
         'pagos.anular' => ['Administrador'],
 
         'calendario.ver' => ['Administrador', 'Coordinador'],
         'gastos.gestionar' => ['Administrador'],
+        'donaciones.gestionar' => ['Administrador'],
         'reportes.financieros' => ['Administrador'],
         'reportes.operativos' => ['Administrador', 'Coordinador'],
         'bitacora.ver' => ['Administrador'],

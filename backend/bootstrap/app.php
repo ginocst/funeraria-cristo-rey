@@ -12,9 +12,9 @@ use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
-        web: __DIR__.'/../routes/web.php',
-        api: __DIR__.'/../routes/api.php',
-        commands: __DIR__.'/../routes/console.php',
+        web: __DIR__ . '/../routes/web.php',
+        api: __DIR__ . '/../routes/api.php',
+        commands: __DIR__ . '/../routes/console.php',
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
@@ -30,7 +30,7 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
-            fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
+            fn(Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
 
         // Reglas de negocio: mensaje claro para el usuario, sin trazas.
@@ -43,7 +43,9 @@ return Application::configure(basePath: dirname(__DIR__))
             $sqlState = $e->errorInfo[0] ?? null;
 
             return match ($sqlState) {
-                '23P01' => response()->json(['message' => 'El vehículo u operario ya está asignado en ese horario.', 'codigo' => 'traslape'], 409),
+                '23P01' => str_contains($e->getMessage(), 'solicitudes_sala_sin_traslape')
+                    ? response()->json(['message' => 'La sala velatoria ya está ocupada en ese horario.', 'codigo' => 'sala_ocupada'], 409)
+                    : response()->json(['message' => 'El vehículo u operario ya está asignado en ese horario.', 'codigo' => 'traslape'], 409),
                 '23505' => response()->json(['message' => 'Ya existe un registro con ese dato único.', 'codigo' => 'duplicado'], 409),
                 '23514' => response()->json(['message' => 'Los datos no cumplen una regla de integridad.', 'codigo' => 'integridad'], 422),
                 '23503' => response()->json(['message' => 'El registro está relacionado con otros datos y no se puede modificar así.', 'codigo' => 'relacionado'], 409),

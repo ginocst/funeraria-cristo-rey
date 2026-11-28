@@ -1,5 +1,6 @@
 import AssessmentRoundedIcon from "@mui/icons-material/AssessmentRounded";
 import BadgeRoundedIcon from "@mui/icons-material/BadgeRounded";
+import BeachAccessRoundedIcon from "@mui/icons-material/BeachAccessRounded";
 import CalendarMonthRoundedIcon from "@mui/icons-material/CalendarMonthRounded";
 import DashboardRoundedIcon from "@mui/icons-material/DashboardRounded";
 import DirectionsCarRoundedIcon from "@mui/icons-material/DirectionsCarRounded";
@@ -10,6 +11,7 @@ import HandshakeRoundedIcon from "@mui/icons-material/HandshakeRounded";
 import HistoryEduRoundedIcon from "@mui/icons-material/HistoryEduRounded";
 import Inventory2RoundedIcon from "@mui/icons-material/Inventory2Rounded";
 import LocalShippingRoundedIcon from "@mui/icons-material/LocalShippingRounded";
+import MeetingRoomRoundedIcon from "@mui/icons-material/MeetingRoomRounded";
 import PaymentsRoundedIcon from "@mui/icons-material/PaymentsRounded";
 import PeopleAltRoundedIcon from "@mui/icons-material/PeopleAltRounded";
 import ReceiptLongRoundedIcon from "@mui/icons-material/ReceiptLongRounded";
@@ -17,6 +19,7 @@ import RequestQuoteRoundedIcon from "@mui/icons-material/RequestQuoteRounded";
 import RouteRoundedIcon from "@mui/icons-material/RouteRounded";
 import SettingsRoundedIcon from "@mui/icons-material/SettingsRounded";
 import StorefrontRoundedIcon from "@mui/icons-material/StorefrontRounded";
+import VolunteerActivismRoundedIcon from "@mui/icons-material/VolunteerActivismRounded";
 import type { ReactElement } from "react";
 import { P } from "../auth/permisos";
 
@@ -43,6 +46,12 @@ export const MENU: GrupoMenu[] = [
         texto: "Mi itinerario",
         icono: <RouteRoundedIcon />,
         permisos: [P.itinerario],
+      },
+      {
+        a: "/dias-libres",
+        texto: "Días libres",
+        icono: <BeachAccessRoundedIcon />,
+        permisos: [P.diasLibresVer],
       },
     ],
   },
@@ -103,6 +112,12 @@ export const MENU: GrupoMenu[] = [
         permisos: [P.vehiculosVer],
       },
       {
+        a: "/salas",
+        texto: "Salas velatorias",
+        icono: <MeetingRoomRoundedIcon />,
+        permisos: [P.solicitudesVer],
+      },
+      {
         a: "/ausencias",
         texto: "Ausencias",
         icono: <EventBusyRoundedIcon />,
@@ -130,6 +145,12 @@ export const MENU: GrupoMenu[] = [
         texto: "Gastos",
         icono: <ReceiptLongRoundedIcon />,
         permisos: [P.gastos],
+      },
+      {
+        a: "/donaciones",
+        texto: "Donaciones",
+        icono: <VolunteerActivismRoundedIcon />,
+        permisos: [P.donaciones],
       },
       {
         a: "/reportes",

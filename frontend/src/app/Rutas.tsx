@@ -55,10 +55,13 @@ const Inventario = lazy(() => import("../features/inventario/Inventario"));
 const Proveedores = lazy(() => import("../features/inventario/Proveedores"));
 const Vehiculos = lazy(() => import("../features/flota/Vehiculos"));
 const Ausencias = lazy(() => import("../features/flota/Ausencias"));
+const DiasLibres = lazy(() => import("../features/flota/DiasLibres"));
 const Itinerario = lazy(() => import("../features/flota/Itinerario"));
 const Pagos = lazy(() => import("../features/finanzas/Pagos"));
 const Cobranza = lazy(() => import("../features/finanzas/Cobranza"));
 const Gastos = lazy(() => import("../features/finanzas/Gastos"));
+const Salas = lazy(() => import("../features/salas/Salas"));
+const Donaciones = lazy(() => import("../features/donaciones/Donaciones"));
 const Reportes = lazy(() => import("../features/reportes/Reportes"));
 const Usuarios = lazy(() => import("../features/admin/Usuarios"));
 const Configuracion = lazy(() => import("../features/admin/Configuracion"));
@@ -216,10 +219,16 @@ const enrutador = createBrowserRouter([
           },
           { path: "vehiculos", element: r([P.vehiculosVer], <Vehiculos />) },
           { path: "ausencias", element: r([P.ausenciasVer], <Ausencias />) },
+          { path: "salas", element: r([P.solicitudesVer], <Salas />) },
           { path: "itinerario", element: r([P.itinerario], <Itinerario />) },
+          {
+            path: "dias-libres",
+            element: r([P.diasLibresVer], <DiasLibres />),
+          },
           { path: "pagos", element: r([P.pagosVer], <Pagos />) },
           { path: "cobranza", element: r([P.pagosVer], <Cobranza />) },
           { path: "gastos", element: r([P.gastos], <Gastos />) },
+          { path: "donaciones", element: r([P.donaciones], <Donaciones />) },
           {
             path: "reportes",
             element: r([P.reportesFinancieros], <Reportes />),

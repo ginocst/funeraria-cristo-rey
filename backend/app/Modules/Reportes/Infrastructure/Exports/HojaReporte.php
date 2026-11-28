@@ -15,7 +15,7 @@ use PhpOffice\PhpSpreadsheet\Worksheet\PageSetup;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 /**
- * Hoja con título, una o más tablas con formato y filas de totales.
+ * Hoja con título, una o más tablas con formato y filas de totales
  */
 class HojaReporte implements Export, WithEvents, WithTitle
 {
@@ -30,6 +30,7 @@ class HojaReporte implements Export, WithEvents, WithTitle
     private const FORMATOS = [
         'moneda' => '"$"#,##0;[Red]-"$"#,##0',
         'entero' => '#,##0',
+        'decimal' => '#,##0.0',
         'porcentaje' => '0.0%',
         'fecha' => 'dd-mm-yyyy',
         'fechahora' => 'dd-mm-yyyy hh:mm',
@@ -49,18 +50,26 @@ class HojaReporte implements Export, WithEvents, WithTitle
 
     public function registerEvents(): array
     {
-        return [AfterSheet::class => fn (AfterSheet $evento) => $this->dibujar($evento->sheet->getDelegate())];
+        return [AfterSheet::class => fn(AfterSheet $evento) => $this->dibujar($evento->sheet->getDelegate())];
+    }
+
+    /** El título ocupa el ancho de las tablas; sin combinar, puede seguir sobre las columnas vacías */
+    protected function combinarTitulo(): bool
+    {
+        return true;
     }
 
     private function dibujar(Worksheet $hoja): void
     {
-        $columnas = max(array_map(fn ($t) => count($t['columnas']), $this->tablas));
+        $columnas = max(array_map(fn($t) => count($t['columnas']), $this->tablas));
         $ultima = Coordinate::stringFromColumnIndex($columnas);
         $anchos = array_fill(1, $columnas, 12);
 
         $this->texto($hoja, 'A1', $this->titulo);
         $this->texto($hoja, 'A2', $this->subtitulo);
-        $hoja->mergeCells("A1:{$ultima}1")->mergeCells("A2:{$ultima}2");
+        if ($this->combinarTitulo()) {
+            $hoja->mergeCells("A1:{$ultima}1")->mergeCells("A2:{$ultima}2");
+        }
         $hoja->getStyle('A1')->getFont()->setBold(true)->setSize(16)->getColor()->setRGB(self::VINO);
         $hoja->getStyle('A2')->getFont()->setSize(10)->getColor()->setRGB('6D5A5C');
         $hoja->getRowDimension(1)->setRowHeight(24);
@@ -77,7 +86,7 @@ class HojaReporte implements Export, WithEvents, WithTitle
 
             $encabezado = $fila;
             foreach ($tabla['columnas'] as $i => [$nombre]) {
-                $this->texto($hoja, Coordinate::stringFromColumnIndex($i + 1).$fila, $nombre);
+                $this->texto($hoja, Coordinate::stringFromColumnIndex($i + 1) . $fila, $nombre);
                 $anchos[$i + 1] = max($anchos[$i + 1], mb_strlen($nombre) + 4);
             }
             $estilo = $hoja->getStyle("A{$fila}:{$fin}{$fila}");
@@ -94,7 +103,7 @@ class HojaReporte implements Export, WithEvents, WithTitle
                     if (is_array($valor)) {
                         ['valor' => $valor, 'tipo' => $tipo] = $valor;
                     }
-                    $celda = Coordinate::stringFromColumnIndex($i + 1).$fila;
+                    $celda = Coordinate::stringFromColumnIndex($i + 1) . $fila;
                     $this->escribir($hoja, $celda, $valor, $tipo);
                     $largo = in_array($tipo, ['texto'], true) ? mb_strlen((string) $valor) + 2 : 16;
                     $anchos[$i + 1] = max($anchos[$i + 1], min($largo, 46));
@@ -106,7 +115,7 @@ class HojaReporte implements Export, WithEvents, WithTitle
             }
 
             if ($tabla['filas'] === []) {
-                $this->texto($hoja, "A{$fila}", 'Sin registros en el mes.');
+                $this->texto($hoja, "A{$fila}", 'Sin registros.');
                 $hoja->mergeCells("A{$fila}:{$fin}{$fila}");
                 $hoja->getStyle("A{$fila}")->getFont()->setItalic(true);
                 $fila++;
@@ -125,14 +134,14 @@ class HojaReporte implements Export, WithEvents, WithTitle
                 $fila++;
             }
 
-            $hoja->getStyle("A{$encabezado}:{$fin}".($fila - 1))->getBorders()->getAllBorders()
+            $hoja->getStyle("A{$encabezado}:{$fin}" . ($fila - 1))->getBorders()->getAllBorders()
                 ->setBorderStyle(Border::BORDER_THIN)->getColor()->setRGB(self::BORDE);
 
             // En las hojas de una sola tabla: encabezado fijo y filtros
             if (count($this->tablas) === 1) {
-                $hoja->freezePane('A'.($encabezado + 1));
+                $hoja->freezePane('A' . ($encabezado + 1));
                 if ($tabla['filas'] !== []) {
-                    $hoja->setAutoFilter("A{$encabezado}:{$fin}".($primera + count($tabla['filas']) - 1));
+                    $hoja->setAutoFilter("A{$encabezado}:{$fin}" . ($primera + count($tabla['filas']) - 1));
                 }
             }
 

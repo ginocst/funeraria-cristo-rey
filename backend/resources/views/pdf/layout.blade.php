@@ -69,6 +69,10 @@
             border-bottom: 1px solid #e3cfd1;
         }
 
+        table.datos th.num {
+            text-align: right;
+        }
+
         table.datos td {
             padding: 5px 6px;
             border-bottom: 1px solid #efe5e6;
@@ -123,6 +127,94 @@
         .linea {
             border-top: 1px solid #2a1d1f;
             padding-top: 4px;
+        }
+
+        /* Gráficos */
+        .bloque {
+            page-break-inside: avoid;
+        }
+
+        table.barras {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table.barras td {
+            padding: 3px 6px 3px 0;
+            vertical-align: middle;
+        }
+
+        table.barras td.etiqueta {
+            width: 170px;
+        }
+
+        table.barras td.pista {
+            width: 255px;
+        }
+
+        table.barras td.detalle {
+            color: #6d5a5c;
+            font-size: 9px;
+        }
+
+        table.barras td.cifra {
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .tramo {
+            display: block;
+            height: 9px;
+        }
+
+        table.columnas {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table.columnas td {
+            text-align: center;
+            padding: 0;
+            font-size: 8.5px;
+        }
+
+        table.columnas tr.area td {
+            vertical-align: bottom;
+            border-bottom: 1px solid #8a7a7c;
+        }
+
+        table.columnas tr.eje td {
+            color: #6d5a5c;
+            padding: 3px 0;
+        }
+
+        table.columnas tr.cifras td {
+            border-top: 1px solid #efe5e6;
+            padding: 2px 0;
+            font-size: 8px;
+            white-space: nowrap;
+        }
+
+        table.columnas td.nombre {
+            text-align: left;
+            width: 52px;
+            border-bottom: 0;
+        }
+
+        .valor {
+            font-size: 8.5px;
+            margin-bottom: 1px;
+        }
+
+        .columna {
+            display: block;
+            margin: 0 auto;
+        }
+
+        .muestra {
+            display: inline-block;
+            width: 7px;
+            height: 7px;
         }
     </style>
 </head>

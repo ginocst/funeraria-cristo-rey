@@ -18,6 +18,9 @@
 use App\Modules\Auditoria\Http\Controllers\AuditoriaController;
 use App\Modules\ClientesConvenios\Http\Controllers\ClienteController;
 use App\Modules\ClientesConvenios\Http\Controllers\ConvenioController;
+use App\Modules\Donaciones\Http\Controllers\CategoriaOrganizacionController;
+use App\Modules\Donaciones\Http\Controllers\DonacionController;
+use App\Modules\Donaciones\Http\Controllers\OrganizacionController;
 use App\Modules\Expedientes\Http\Controllers\ActividadController;
 use App\Modules\Expedientes\Http\Controllers\DocumentoController;
 use App\Modules\Expedientes\Http\Controllers\ExpedienteController;
@@ -25,6 +28,7 @@ use App\Modules\Finanzas\Http\Controllers\FinanzasController;
 use App\Modules\Finanzas\Http\Controllers\GastoController;
 use App\Modules\Finanzas\Http\Controllers\MedioPagoController;
 use App\Modules\Flota\Http\Controllers\AusenciaController;
+use App\Modules\Flota\Http\Controllers\DiasLibresController;
 use App\Modules\Flota\Http\Controllers\DisponibilidadController;
 use App\Modules\Flota\Http\Controllers\ItinerarioController;
 use App\Modules\Flota\Http\Controllers\VehiculoController;
@@ -39,6 +43,7 @@ use App\Modules\Notificaciones\Http\Controllers\AvisoController;
 use App\Modules\Reportes\Http\Controllers\DashboardController;
 use App\Modules\Reportes\Http\Controllers\DocumentosPdfController;
 use App\Modules\Solicitudes\Http\Controllers\CalendarioController;
+use App\Modules\Solicitudes\Http\Controllers\SalaVelatoriaController;
 use App\Modules\Solicitudes\Http\Controllers\SolicitudController;
 use Illuminate\Support\Facades\Route;
 
@@ -62,7 +67,11 @@ Route::middleware(['auth:sanctum', 'sesion.absoluta', 'throttle:api'])->group(fu
         Route::post('avisos/{id}/leer', [AvisoController::class, 'leer'])->whereNumber('id');
         Route::get('avisos/stream', [AvisoController::class, 'stream']);
 
-        Route::get('dashboard', DashboardController::class)->middleware('can:reportes.operativos');
+        Route::middleware('can:reportes.operativos')->group(function () {
+            Route::get('dashboard', DashboardController::class);
+            Route::get('dashboard.pdf', [DocumentosPdfController::class, 'panelPdf']);
+            Route::get('dashboard.xlsx', [DocumentosPdfController::class, 'panelExcel']);
+        });
 
         /* ---------- Identidad y configuración ---------- */
         Route::middleware('can:usuarios.gestionar')->group(function () {
@@ -132,6 +141,14 @@ Route::middleware(['auth:sanctum', 'sesion.absoluta', 'throttle:api'])->group(fu
         });
         Route::get('solicitudes/{id}/orden.pdf', [DocumentosPdfController::class, 'ordenServicio'])->middleware('can:solicitudes.ver');
         Route::get('disponibilidad', DisponibilidadController::class)->middleware('can:solicitudes.crear');
+        Route::get('salas-velatorias', [SalaVelatoriaController::class, 'index'])->middleware('can:solicitudes.ver');
+        Route::get('salas-velatorias/agenda', [SalaVelatoriaController::class, 'agenda'])->middleware('can:solicitudes.ver');
+        Route::middleware('can:salas.gestionar')->group(function () {
+            Route::post('salas-velatorias/{id}/estado', [SalaVelatoriaController::class, 'cambiarEstado'])->whereNumber('id');
+            Route::post('salas-velatorias', [SalaVelatoriaController::class, 'store']);
+            Route::put('salas-velatorias/{id}', [SalaVelatoriaController::class, 'update'])->whereNumber('id');
+            Route::delete('salas-velatorias/{id}', [SalaVelatoriaController::class, 'destroy'])->whereNumber('id');
+        });
         Route::get('calendario', CalendarioController::class)->middleware('can:calendario.ver');
 
         /* ---------- Inventario y proveedores ---------- */
@@ -174,6 +191,12 @@ Route::middleware(['auth:sanctum', 'sesion.absoluta', 'throttle:api'])->group(fu
             Route::put('ausencias/{id}', [AusenciaController::class, 'update']);
             Route::delete('ausencias/{id}', [AusenciaController::class, 'destroy']);
         });
+        Route::get('dias-libres', [DiasLibresController::class, 'index'])->middleware('can:dias_libres.ver');
+        Route::post('dias-libres', [DiasLibresController::class, 'store'])->middleware('can:dias_libres.solicitar');
+        Route::middleware('can:dias_libres.evaluar')->group(function () {
+            Route::post('dias-libres/{id}/aprobar', [DiasLibresController::class, 'aprobar'])->whereNumber('id');
+            Route::post('dias-libres/{id}/rechazar', [DiasLibresController::class, 'rechazar'])->whereNumber('id');
+        });
         Route::get('itinerario', [ItinerarioController::class, 'index'])->middleware('can:itinerario.ver');
         Route::get('itinerario/{id}', [ItinerarioController::class, 'show'])->middleware('can:itinerario.ver');
 
@@ -192,6 +215,26 @@ Route::middleware(['auth:sanctum', 'sesion.absoluta', 'throttle:api'])->group(fu
             Route::post('gastos', [GastoController::class, 'store']);
             Route::put('gastos/{id}', [GastoController::class, 'update']);
             Route::delete('gastos/{id}', [GastoController::class, 'destroy']);
+        });
+
+        /* ---------- Donaciones ---------- */
+        Route::middleware('can:donaciones.gestionar')->group(function () {
+            foreach (
+                [
+                    'categorias-organizacion' => CategoriaOrganizacionController::class,
+                    'organizaciones' => OrganizacionController::class,
+                    'donaciones' => DonacionController::class,
+                ] as $recurso => $controlador
+            ) {
+                Route::get($recurso, [$controlador, 'index']);
+                Route::post($recurso, [$controlador, 'store']);
+                Route::put("$recurso/{id}", [$controlador, 'update'])->whereNumber('id');
+                Route::delete("$recurso/{id}", [$controlador, 'destroy'])->whereNumber('id');
+            }
+            Route::get('donaciones/mensual', [DonacionController::class, 'mensual']);
+            Route::get('donaciones/mensual.pdf', [DocumentosPdfController::class, 'donacionesPdf']);
+            Route::get('donaciones/mensual.xlsx', [DocumentosPdfController::class, 'donacionesExcel']);
+            Route::get('organizaciones/{id}/donaciones.pdf', [DocumentosPdfController::class, 'donacionesOrganizacionPdf'])->whereNumber('id');
         });
 
         /* ---------- Reportes y bitácora ---------- */

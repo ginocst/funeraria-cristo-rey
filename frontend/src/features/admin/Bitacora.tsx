@@ -50,6 +50,14 @@ const ACCIONES: Record<string, string> = {
   editar_parametros: "Cambió parámetros",
   reporte_mensual_pdf: "Generó el reporte en PDF",
   reporte_mensual_excel: "Generó el reporte en Excel",
+  panel_pdf: "Generó el panel en PDF",
+  panel_excel: "Generó el panel en Excel",
+  cambiar_estado_sala: "Cambió el estado de una sala",
+  reporte_donaciones_pdf: "Generó donaciones en PDF",
+  reporte_donaciones_excel: "Generó donaciones en Excel",
+  solicitar_dias_libres: "Pidió días libres",
+  aprobar_dias_libres: "Aprobó días libres",
+  rechazar_dias_libres: "Rechazó días libres",
 };
 
 function Detalle({ a }: { a: Auditoria }) {
@@ -158,6 +166,11 @@ export default function Bitacora() {
               "proveedores",
               "vehiculos",
               "ausencias",
+              "dias_libres",
+              "donaciones",
+              "organizaciones",
+              "salas_velatorias",
+              "categorias_organizacion",
               "gastos",
               "usuarios",
               "archivos",

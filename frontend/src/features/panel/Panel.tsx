@@ -1,5 +1,7 @@
 import ArrowDownwardRoundedIcon from "@mui/icons-material/ArrowDownwardRounded";
 import ArrowUpwardRoundedIcon from "@mui/icons-material/ArrowUpwardRounded";
+import PictureAsPdfRoundedIcon from "@mui/icons-material/PictureAsPdfRounded";
+import TableViewRoundedIcon from "@mui/icons-material/TableViewRounded";
 import WarningAmberRoundedIcon from "@mui/icons-material/WarningAmberRounded";
 import {
   Alert,
@@ -14,15 +16,18 @@ import {
 } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
 import type { EChartsOption } from "echarts";
-import { useMemo, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { Link as RouterLink } from "react-router-dom";
-import { api, leerError } from "../../api/cliente";
+import { api, descargarBlob, guardarBlob, leerError } from "../../api/cliente";
 import type { EstadoSolicitud, Panel as DatosPanel } from "../../api/tipos";
 import { colores } from "../../app/tema";
 import { useSesion } from "../../auth/Sesion";
+import { Encabezado } from "../../components/Encabezado";
 import { ESTADOS_SOLICITUD } from "../../components/Estados";
 import { Grafico } from "../../components/Grafico";
+import { useAvisar } from "../../components/Notificador";
 import { Seccion } from "../../components/Seccion";
+import { VisorPdf } from "../../components/VisorPdf";
 import {
   ahoraLocal,
   capitalizar,
@@ -147,6 +152,8 @@ function Variacion({ actual, anterior }: { actual: number; anterior: number }) {
 export default function Panel() {
   const { sesion, puede } = useSesion();
   const conMontos = puede("reportes.financieros");
+  const avisar = useAvisar();
+  const [verPdf, setVerPdf] = useState(false);
   const {
     data: d,
     isLoading,
@@ -275,6 +282,14 @@ export default function Panel() {
 
   const k = d?.kpis;
   const hoy = ahoraLocal();
+  const archivo = `panel-${hoy.format("YYYY-MM-DD")}`;
+  const excel = async () => {
+    try {
+      guardarBlob(await descargarBlob("/dashboard.xlsx"), `${archivo}.xlsx`);
+    } catch {
+      avisar("No se pudo descargar el Excel.", "error");
+    }
+  };
   const saludo =
     hoy.hour() < 12
       ? "Buenos días"
@@ -287,14 +302,28 @@ export default function Panel() {
 
   return (
     <Box>
-      <Box component="header" sx={{ mb: 3 }}>
-        <Typography variant="h1">
-          {saludo}, {sesion?.nombre.split(" ")[0]}
-        </Typography>
-        <Typography variant="subtitle1" sx={{ mt: 0.5 }}>
-          {capitalizar(fechaLarga(hoy.toISOString(), false))}
-        </Typography>
-      </Box>
+      <Encabezado
+        titulo={`${saludo}, ${sesion?.nombre.split(" ")[0]}`}
+        descripcion={capitalizar(fechaLarga(hoy.toISOString(), false))}
+        acciones={
+          <>
+            <Button
+              variant="outlined"
+              startIcon={<TableViewRoundedIcon />}
+              onClick={excel}
+            >
+              Excel
+            </Button>
+            <Button
+              variant="contained"
+              startIcon={<PictureAsPdfRoundedIcon />}
+              onClick={() => setVerPdf(true)}
+            >
+              Ver PDF
+            </Button>
+          </>
+        }
+      />
 
       {/* Indicadores del mes en una sola franja */}
       <Paper
@@ -636,6 +665,13 @@ export default function Panel() {
           </Stack>
         </Seccion>
       </Box>
+      <VisorPdf
+        abierto={verPdf}
+        titulo="Panel de gestión"
+        ruta="/dashboard.pdf"
+        nombreArchivo={`${archivo}.pdf`}
+        alCerrar={() => setVerPdf(false)}
+      />
     </Box>
   );
 }

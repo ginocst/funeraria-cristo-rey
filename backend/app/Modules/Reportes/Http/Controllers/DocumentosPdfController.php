@@ -3,10 +3,15 @@
 namespace App\Modules\Reportes\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Modules\Donaciones\Application\ResumenDonaciones;
+use App\Modules\Donaciones\Infrastructure\Models\Organizacion;
 use App\Modules\Expedientes\Infrastructure\Models\Expediente;
 use App\Modules\Finanzas\Infrastructure\Models\Comprobante;
 use App\Modules\Reportes\Application\Indicadores;
+use App\Modules\Reportes\Infrastructure\Exports\DonacionesExport;
+use App\Modules\Reportes\Infrastructure\Exports\PanelExport;
 use App\Modules\Reportes\Infrastructure\Exports\ReporteMensualExport;
+use App\Modules\Solicitudes\Domain\EstadoSolicitud;
 use App\Modules\Solicitudes\Infrastructure\Models\Solicitud;
 use App\Shared\Contratos\IAuditoria;
 use App\Shared\Contratos\IExpediente;
@@ -20,7 +25,7 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 /**
  * Documentos imprimibles y reportes: orden de servicio,
- * comprobante de pago y reporte mensual en PDF y Excel. Los PDF se entregan
+ * comprobante de pago, reporte mensual y panel en PDF y Excel. Los PDF se entregan
  * «inline» para verlos en la interfaz y descargarlos desde ahí
  */
 class DocumentosPdfController extends Controller
@@ -45,7 +50,7 @@ class DocumentosPdfController extends Controller
             'solicitud' => $s,
             'resumen' => $expedientes->resumenFinanciero($s->expediente_id),
             'presentacion' => $s->traslado_at?->copy()->subMinutes($parametros->entero('presentacion_previa_minutos')),
-        ], 'orden-servicio-'.$s->expediente->codigo.'.pdf');
+        ], 'orden-servicio-' . $s->expediente->codigo . '.pdf');
     }
 
     public function comprobante(int $id, IExpediente $expedientes): Response
@@ -58,7 +63,7 @@ class DocumentosPdfController extends Controller
             'pago' => $c->pago,
             'expediente' => $expediente,
             'resumen' => $expedientes->resumenFinanciero($expediente->id),
-        ], 'comprobante-'.$c->folio.'.pdf');
+        ], 'comprobante-' . $c->folio . '.pdf');
     }
 
     public function mensualJson(Request $request, Indicadores $indicadores): JsonResponse
@@ -82,6 +87,66 @@ class DocumentosPdfController extends Controller
         return Excel::download(new ReporteMensualExport($datos, $indicadores->detalleMensual($mes)), "reporte-$mes.xlsx");
     }
 
+    public function panelPdf(Request $request, Indicadores $indicadores): Response
+    {
+        $datos = $this->datosPanel($request, $indicadores);
+        $this->auditoria->registrar('panel_pdf', 'reportes');
+
+        return $this->pdf('pdf.panel', $datos, 'panel-' . $this->hoy() . '.pdf');
+    }
+
+    public function panelExcel(Request $request, Indicadores $indicadores): BinaryFileResponse
+    {
+        $datos = $this->datosPanel($request, $indicadores);
+        $this->auditoria->registrar('panel_excel', 'reportes');
+
+        return Excel::download(new PanelExport($datos), 'panel-' . $this->hoy() . '.xlsx');
+    }
+
+    public function donacionesPdf(Request $request, ResumenDonaciones $resumen): Response
+    {
+        $datos = $resumen->mensual($mes = $this->mes($request));
+        $this->auditoria->registrar('reporte_donaciones_pdf', 'donaciones', $mes);
+
+        return $this->pdf('pdf.donaciones', [...$datos, 'organizacion' => null], "donaciones-$mes.pdf");
+    }
+
+    public function donacionesExcel(Request $request, ResumenDonaciones $resumen): BinaryFileResponse
+    {
+        $datos = $resumen->mensual($mes = $this->mes($request));
+        $this->auditoria->registrar('reporte_donaciones_excel', 'donaciones', $mes);
+
+        return Excel::download(new DonacionesExport($datos), "donaciones-$mes.xlsx");
+    }
+
+    public function donacionesOrganizacionPdf(int $id, Request $request, ResumenDonaciones $resumen): Response
+    {
+        $organizacion = Organizacion::with('categoria')->findOrFail($id);
+        $datos = $resumen->mensual($mes = $this->mes($request), $id);
+        $this->auditoria->registrar('reporte_donaciones_pdf', 'organizaciones', $id, null, ['mes' => $mes]);
+
+        return $this->pdf('pdf.donaciones', [...$datos, 'organizacion' => $organizacion], "donaciones-organizacion-$id-$mes.pdf");
+    }
+
+    /** Los mismos datos del panel en pantalla: sin montos para quien no tiene reportes financieros */
+    private function datosPanel(Request $request, Indicadores $indicadores): array
+    {
+        $conMontos = $request->user()->tienePermiso('reportes.financieros');
+        $datos = $indicadores->panel($conMontos);
+
+        return [
+            ...$datos,
+            'conMontos' => $conMontos,
+            'estados' => collect(EstadoSolicitud::cases())
+                ->mapWithKeys(fn(EstadoSolicitud $e) => [$e->etiqueta() => (int) ($datos['solicitudes_por_estado'][$e->value] ?? 0)])->all(),
+        ];
+    }
+
+    private function hoy(): string
+    {
+        return now(config('funeraria.zona_horaria_local'))->format('Y-m-d');
+    }
+
     private function mes(Request $request): string
     {
         return $request->validate(['mes' => ['nullable', 'date_format:Y-m']])['mes'] ?? now(config('funeraria.zona_horaria_local'))->format('Y-m');
@@ -89,7 +154,7 @@ class DocumentosPdfController extends Controller
 
     private function pdf(string $vista, array $datos, string $nombre): Response
     {
-        $logo = 'data:image/png;base64,'.base64_encode((string) file_get_contents(public_path('img/logo.png')));
+        $logo = 'data:image/png;base64,' . base64_encode((string) file_get_contents(public_path('img/logo.png')));
 
         return Pdf::loadView($vista, [...$datos, 'logo' => $logo])->setPaper('letter')->stream($nombre);
     }

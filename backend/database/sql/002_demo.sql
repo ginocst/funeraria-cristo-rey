@@ -76,17 +76,17 @@ INSERT INTO proveedores (id, nombre, rut, rubro, contacto, telefono, email, dire
     (4, 'Insumos Funerarios Araucanía', pg_temp.rut(78123456), 'insumos', 'Rodrigo Catalán', '+56 45 227 6600', 'ventas@insumosaraucania.test', 'Calle Lautaro 455, Temuco', 'Urnas de cremación, cirios y libros de condolencias.', true, now(), now());
 
 INSERT INTO productos (id, proveedor_id, codigo, nombre, tipo, material, color, medidas, descripcion, precio, stock, umbral_minimo, infantil, publico, foto_ruta, atributos, created_at, updated_at) VALUES
-    (1, 2, 'AT-101', 'Imperial Roble', 'ataud', 'Roble', 'Café oscuro', '195 × 60 × 45 cm', 'Ataúd de roble macizo con tapa tallada, manillas de bronce y forro de satén capitoné.', 1250000, 4, 2, false, true, 'at-101.webp', '{"manillas": "bronce", "forro": "satén capitoné"}', now(), now()),
-    (2, 1, 'AT-102', 'Clásico Pino', 'ataud', 'Pino', 'Natural barnizado', '190 × 58 × 42 cm', 'Modelo tradicional de pino barnizado, terminación brillante y forro de tela blanca.', 480000, 9, 3, false, true, 'at-102.webp', '{"forro": "tela"}', now(), now()),
-    (3, 2, 'AT-103', 'Colonial Raulí', 'ataud', 'Raulí', 'Caoba', '196 × 62 × 46 cm', 'Líneas coloniales en raulí, molduras laterales y crucifijo en la tapa.', 1590000, 2, 2, false, true, 'at-103.webp', '{"manillas": "bronce envejecido"}', now(), now()),
-    (4, 2, 'AT-104', 'Ejecutivo Lenga', 'ataud', 'Lenga', 'Miel', '194 × 60 × 44 cm', 'Ataúd de lenga con tapa de doble panel y terminación satinada.', 890000, 5, 3, false, true, 'at-104.webp', '{}', now(), now()),
-    (5, 1, 'AT-105', 'Sencillo Gris Perla', 'ataud', 'Aglomerado enchapado', 'Gris perla', '188 × 56 × 40 cm', 'Alternativa económica con enchape lacado y manillas metálicas.', 320000, 6, 3, false, true, 'at-105.webp', '{}', now(), now()),
-    (6, 1, 'AT-106', 'Metálico Plata', 'ataud', 'Acero', 'Plateado', '198 × 64 × 48 cm', 'Ataúd metálico con sello hermético, recomendado para traslados largos.', 1980000, 1, 1, false, true, 'at-106.webp', '{"hermetico": true}', now(), now()),
-    (7, 1, 'AT-201', 'Ángel Blanco (infantil)', 'ataud', 'Pino lacado', 'Blanco', '120 × 45 × 35 cm', 'Ataúd infantil lacado en blanco con detalles en relieve.', 290000, 1, 2, true, true, 'at-201.webp', '{}', now(), now()),
-    (8, 1, 'AT-202', 'Celeste (infantil)', 'ataud', 'Pino lacado', 'Celeste', '110 × 40 × 32 cm', 'Ataúd infantil en tono celeste con forro acolchado.', 270000, 3, 2, true, true, 'at-202.webp', '{}', now(), now()),
-    (9, 4, 'UC-301', 'Cremación Mármol', 'urna_cremacion', 'Resina marmolada', 'Blanco', '28 × 18 cm', 'Urna para cenizas de resina con acabado tipo mármol y tapa roscada.', 180000, 7, 3, false, true, 'uc-301.webp', '{"capacidad_litros": 3.5}', now(), now()),
-    (10, 2, 'UC-302', 'Cremación Madera Nativa', 'urna_cremacion', 'Raulí', 'Café', '25 × 20 × 15 cm', 'Urna de raulí con placa frontal para grabado.', 150000, 5, 3, false, true, 'uc-302.webp', '{"capacidad_litros": 3.0, "grabado": true}', now(), now()),
-    (11, 2, 'UR-401', 'Personalizada con grabado', 'urna', 'Roble', 'Nogal', '195 × 60 × 45 cm', 'Urna de roble con grabado láser a pedido (nombre, fechas o imagen).', 1450000, 2, 2, false, true, 'ur-401.webp', '{"personalizable": true, "grabado": "láser"}', now(), now()),
+    (1, 2, 'AT-101', 'Imperial Roble', 'ataud', 'Roble', 'Café oscuro', '195 × 60 × 45 cm', 'Ataúd de roble macizo con tapa tallada, manillas de bronce y forro de satén capitoné.', 1450000, 4, 2, false, true, 'at-101.webp', '{"manillas": "bronce", "forro": "satén capitoné"}', now(), now()),
+    (2, 1, 'AT-102', 'Clásico Pino', 'ataud', 'Pino', 'Natural barnizado', '190 × 58 × 42 cm', 'Modelo tradicional de pino barnizado, terminación brillante y forro de tela blanca.', 790000, 9, 3, false, true, 'at-102.webp', '{"forro": "tela"}', now(), now()),
+    (3, 2, 'AT-103', 'Colonial Raulí', 'ataud', 'Raulí', 'Caoba', '196 × 62 × 46 cm', 'Líneas coloniales en raulí, molduras laterales y crucifijo en la tapa.', 1790000, 2, 2, false, true, 'at-103.webp', '{"manillas": "bronce envejecido"}', now(), now()),
+    (4, 2, 'AT-104', 'Ejecutivo Lenga', 'ataud', 'Lenga', 'Miel', '194 × 60 × 44 cm', 'Ataúd de lenga con tapa de doble panel y terminación satinada.', 1090000, 5, 3, false, true, 'at-104.webp', '{}', now(), now()),
+    (5, 1, 'AT-105', 'Sencillo Gris Perla', 'ataud', 'Aglomerado enchapado', 'Gris perla', '188 × 56 × 40 cm', 'Alternativa económica con enchape lacado y manillas metálicas.', 690000, 6, 3, false, true, 'at-105.webp', '{}', now(), now()),
+    (6, 1, 'AT-106', 'Metálico Plata', 'ataud', 'Acero', 'Plateado', '198 × 64 × 48 cm', 'Ataúd metálico con sello hermético, recomendado para traslados largos.', 2190000, 1, 1, false, true, 'at-106.webp', '{"hermetico": true}', now(), now()),
+    (7, 1, 'AT-201', 'Ángel Blanco (infantil)', 'ataud', 'Pino lacado', 'Blanco', '120 × 45 × 35 cm', 'Ataúd infantil lacado en blanco con detalles en relieve.', 670000, 1, 2, true, true, 'at-201.webp', '{}', now(), now()),
+    (8, 1, 'AT-202', 'Celeste (infantil)', 'ataud', 'Pino lacado', 'Celeste', '110 × 40 × 32 cm', 'Ataúd infantil en tono celeste con forro acolchado.', 650000, 3, 2, true, true, 'at-202.webp', '{}', now(), now()),
+    (9, 4, 'UC-301', 'Cremación Mármol', 'urna_cremacion', 'Resina marmolada', 'Blanco', '28 × 18 cm', 'Urna para cenizas de resina con acabado tipo mármol y tapa roscada.', 630000, 7, 3, false, true, 'uc-301.webp', '{"capacidad_litros": 3.5}', now(), now()),
+    (10, 2, 'UC-302', 'Cremación Madera Nativa', 'urna_cremacion', 'Raulí', 'Café', '25 × 20 × 15 cm', 'Urna de raulí con placa frontal para grabado.', 600000, 5, 3, false, true, 'uc-302.webp', '{"capacidad_litros": 3.0, "grabado": true}', now(), now()),
+    (11, 2, 'UR-401', 'Personalizada con grabado', 'urna', 'Roble', 'Nogal', '195 × 60 × 45 cm', 'Urna de roble con grabado láser a pedido (nombre, fechas o imagen).', 1650000, 2, 2, false, true, 'ur-401.webp', '{"personalizable": true, "grabado": "láser"}', now(), now()),
     (12, 3, 'EL-501', 'Corona de flores naturales', 'elemento', 'Flores naturales', 'Blanco y verde', '80 cm', 'Corona de lirios, rosas y follaje de temporada.', 85000, 12, 4, false, false, NULL, '{}', now(), now()),
     (13, 3, 'EL-502', 'Cubre urna de rosas', 'elemento', 'Flores naturales', 'Blanco', '150 cm', 'Manto floral de rosas blancas para la tapa.', 120000, 6, 3, false, false, NULL, '{}', now(), now()),
     (14, 4, 'EL-503', 'Libro de condolencias', 'elemento', 'Cuero sintético', 'Negro', '30 × 22 cm', 'Libro de firmas con cubierta acolchada.', 25000, 20, 5, false, false, NULL, '{}', now(), now()),
@@ -195,7 +195,7 @@ SELECT i, i, sucursal, i, convenio, 'cerrado', traslado - interval '2 days', CAS
 INSERT INTO solicitudes (id, expediente_id, sucursal_id, estado, valor_servicio, descuento, velatorio_inicio, lugar_velatorio, traslado_at,
                          lugar_sepultura, sepultura_detalle, mensaje, evaluada_por, evaluada_at, created_at, created_by, updated_at)
 SELECT i, i, sucursal, 'ejecutada', valor, descuento, traslado - interval '20 hours',
-       (ARRAY['Sala Velatoria Cristo Rey, Temuco', 'Domicilio particular', 'Capilla San Francisco, Temuco'])[1 + (i + sucursal) % 3],
+       (ARRAY['Sala Velatoria Principal, Calle Lautaro 195, Temuco', 'Domicilio particular', 'Capilla San Francisco, Temuco'])[1 + (i + sucursal) % 3],
        traslado,
        CASE WHEN ataud IN (9, 10) THEN 'Crematorio de Temuco' ELSE (ARRAY['Cementerio General de Temuco', 'Cementerio Parque Temuco'])[1 + (i * 7) % 2] END,
        CASE WHEN ataud IN (9, 10) THEN NULL ELSE 'Patio ' || (1 + i % 9) || ', sepultura ' || (10 + (i * 13) % 240) END,
@@ -315,7 +315,7 @@ INSERT INTO expedientes (id, cliente_id, sucursal_id, difunto_id, convenio_id, e
 INSERT INTO solicitudes (id, expediente_id, sucursal_id, estado, valor_servicio, descuento, velatorio_inicio, lugar_velatorio, traslado_at,
                          lugar_sepultura, sepultura_detalle, mensaje, comentario, evaluada_por, evaluada_at, motivo_cancelacion, created_at, created_by, updated_at) VALUES
     -- En velatorio ahora; traslado en unas horas.
-    (1001, 1001, 1, 'aceptada', 990000, 0, pg_temp.rel(-20), 'Sala Velatoria Cristo Rey, Temuco', pg_temp.rel(2.5),
+    (1001, 1001, 1, 'aceptada', 990000, 0, pg_temp.rel(-20), 'Sala Velatoria Principal, Calle Lautaro 195, Temuco', pg_temp.rel(2.5),
         'Cementerio General de Temuco', 'Patio 7, sepultura familiar 23', 'Siempre en nuestros corazones. Tus hijos y nietos.', NULL, 1, pg_temp.rel(-24), NULL, pg_temp.rel(-30), 1, pg_temp.rel(-24)),
     -- Velatorio recién iniciado; traslado mañana.
     (1002, 1002, 2, 'aceptada', 790000, 0, pg_temp.loc(0, '09:00'), 'Domicilio particular, Temuco', pg_temp.loc(1, '11:00'),
@@ -324,16 +324,16 @@ INSERT INTO solicitudes (id, expediente_id, sucursal_id, estado, valor_servicio,
     (1003, 1003, 1, 'aceptada', 1190000, 119000, pg_temp.rel(-26), 'Capilla San Francisco, Temuco', pg_temp.rel(-0.5),
         'Cementerio Parque Temuco', 'Sector Jardín, sepultura 88', NULL, NULL, 1, pg_temp.rel(-30), NULL, pg_temp.rel(-36), 1, pg_temp.rel(-30)),
     -- En revisión: el abono aún no alcanza el mínimo.
-    (1004, 1004, 2, 'en_revision', 890000, 0, pg_temp.loc(2, '18:00'), 'Sala Velatoria Cristo Rey, Temuco', pg_temp.loc(3, '11:00'),
+    (1004, 1004, 2, 'en_revision', 890000, 0, pg_temp.loc(2, '18:00'), 'Sala Velatoria Principal, Calle Lautaro 195, Temuco', pg_temp.loc(3, '11:00'),
         'Cementerio General de Temuco', NULL, NULL, NULL, NULL, NULL, NULL, pg_temp.rel(-5), 2, pg_temp.rel(-5)),
     -- En revisión con abono suficiente: lista para aceptar.
-    (1005, 1005, 1, 'en_revision', 1390000, 0, pg_temp.loc(1, '17:00'), 'Sala Velatoria Cristo Rey, Temuco', pg_temp.loc(2, '16:00'),
+    (1005, 1005, 1, 'en_revision', 1390000, 0, pg_temp.loc(1, '17:00'), 'Sala Velatoria Principal, Calle Lautaro 195, Temuco', pg_temp.loc(2, '16:00'),
         'Cementerio General de Temuco', 'Patio 2, mausoleo familia Riquelme', 'Descansa en paz, papá.', NULL, NULL, NULL, NULL, pg_temp.rel(-20), 1, pg_temp.rel(-20)),
     -- Con observaciones del administrador.
     (1006, 1006, 2, 'con_observaciones', 690000, 0, pg_temp.loc(3, '17:00'), 'Domicilio particular, Temuco', pg_temp.loc(4, '15:00'),
         'Cementerio Parque Temuco', 'Nicho 77', NULL, 'El nicho indicado no está disponible según el cementerio. Confirmar otro con la familia.', 1, pg_temp.rel(-2), NULL, pg_temp.rel(-4), 2, pg_temp.rel(-2)),
     -- Aceptada para pasado mañana.
-    (1007, 1007, 1, 'aceptada', 1190000, 143000, pg_temp.loc(1, '19:00'), 'Sala Velatoria Cristo Rey, Temuco', pg_temp.loc(2, '10:00'),
+    (1007, 1007, 1, 'aceptada', 1190000, 143000, pg_temp.loc(1, '19:00'), 'Sala Velatoria Casa Matriz, Manuel Montt 1991, Población Santa Elena, Temuco', pg_temp.loc(2, '10:00'),
         'Cementerio General de Temuco', 'Patio 5, sepultura 140', NULL, NULL, 1, pg_temp.rel(-26), NULL, pg_temp.rel(-28), 1, pg_temp.rel(-26)),
     -- Cancelada por la familia.
     (1008, 1008, 2, 'cancelada', 790000, 0, pg_temp.loc(0, '20:00'), 'Domicilio particular, Temuco', pg_temp.loc(1, '15:00'),
@@ -342,16 +342,20 @@ INSERT INTO solicitudes (id, expediente_id, sucursal_id, estado, valor_servicio,
     (1009, 1009, 1, 'no_aplica', 890000, 0, pg_temp.rel(-140), 'Domicilio particular (fuera del área de cobertura)', pg_temp.rel(-120),
         'Cementerio fuera del área de cobertura', NULL, NULL, 'El traslado solicitado queda fuera del área de cobertura de la funeraria.', 1, pg_temp.rel(-146), NULL, pg_temp.rel(-150), 1, pg_temp.rel(-146));
 
+-- Los velatorios en salas propias quedan asociados a la sala (creadas por la migración)
+UPDATE solicitudes s SET sala_velatorio_id = sv.id FROM salas_velatorias sv WHERE s.lugar_velatorio = sv.nombre || ', ' || sv.direccion;
+UPDATE salas_velatorias SET capacidad = CASE WHEN nombre = 'Sala Velatoria Principal' THEN 60 ELSE 40 END;
+
 INSERT INTO producto_solicitud (producto_id, solicitud_id, cantidad, precio_unitario, created_at, updated_at) VALUES
-    (1, 1001, 1, 1250000, now(), now()), (12, 1001, 2, 85000, now(), now()), (14, 1001, 1, 25000, now(), now()),
-    (2, 1002, 1, 480000, now(), now()), (12, 1002, 1, 85000, now(), now()),
-    (3, 1003, 1, 1590000, now(), now()), (13, 1003, 1, 120000, now(), now()),
-    (4, 1004, 1, 890000, now(), now()),
-    (11, 1005, 1, 1450000, now(), now()), (13, 1005, 1, 120000, now(), now()), (15, 1005, 1, 45000, now(), now()),
-    (5, 1006, 1, 320000, now(), now()),
-    (1, 1007, 1, 1250000, now(), now()), (12, 1007, 1, 85000, now(), now()),
-    (2, 1008, 1, 480000, now(), now()),
-    (4, 1009, 1, 890000, now(), now());
+    (1, 1001, 1, 1450000, now(), now()), (12, 1001, 2, 85000, now(), now()), (14, 1001, 1, 25000, now(), now()),
+    (2, 1002, 1, 790000, now(), now()), (12, 1002, 1, 85000, now(), now()),
+    (3, 1003, 1, 1790000, now(), now()), (13, 1003, 1, 120000, now(), now()),
+    (4, 1004, 1, 1090000, now(), now()),
+    (11, 1005, 1, 1650000, now(), now()), (13, 1005, 1, 120000, now(), now()), (15, 1005, 1, 45000, now(), now()),
+    (5, 1006, 1, 690000, now(), now()),
+    (1, 1007, 1, 1450000, now(), now()), (12, 1007, 1, 85000, now(), now()),
+    (2, 1008, 1, 790000, now(), now()),
+    (4, 1009, 1, 1090000, now(), now());
 
 INSERT INTO asignaciones (id, solicitud_id, vehiculo_id, externo, inicio, fin, activa, created_at, updated_at) VALUES
     (1001, 1001, 1, false, pg_temp.rel(1.5), pg_temp.rel(5.5), true, now(), now()),
@@ -373,7 +377,7 @@ SELECT a.id, x.usuario_id, x.funcion, a.inicio, a.fin, a.activa, now(), now()
 
 INSERT INTO actividades (expediente_id, tipo, lugar, inicio, fin, notas, created_at, updated_at) VALUES
     (1001, 'retiro', 'Hospital Regional de Temuco', pg_temp.rel(-26), pg_temp.rel(-25), 'Retiro con camioneta de apoyo.', now(), now()),
-    (1001, 'velatorio', 'Sala Velatoria Cristo Rey, Temuco', pg_temp.rel(-20), pg_temp.rel(2.5), NULL, now(), now()),
+    (1001, 'velatorio', 'Sala Velatoria Principal, Calle Lautaro 195, Temuco', pg_temp.rel(-20), pg_temp.rel(2.5), NULL, now(), now()),
     (1001, 'misa', 'Capilla de la sala velatoria', pg_temp.rel(1), pg_temp.rel(2), 'Responso a cargo del párroco.', now(), now()),
     (1001, 'sepultacion', 'Cementerio General de Temuco', pg_temp.rel(3.5), pg_temp.rel(4.5), NULL, now(), now()),
     (1002, 'velatorio', 'Domicilio particular, Temuco', pg_temp.loc(0, '09:00'), pg_temp.loc(1, '11:00'), 'Instalación con el furgón 2.', now(), now()),
@@ -381,17 +385,17 @@ INSERT INTO actividades (expediente_id, tipo, lugar, inicio, fin, notas, created
     (1002, 'sepultacion', 'Cementerio General de Temuco', pg_temp.loc(1, '12:00'), pg_temp.loc(1, '13:00'), NULL, now(), now()),
     (1003, 'velatorio', 'Capilla San Francisco, Temuco', pg_temp.rel(-26), pg_temp.rel(-0.5), NULL, now(), now()),
     (1003, 'sepultacion', 'Cementerio Parque Temuco', pg_temp.rel(0.5), pg_temp.rel(1.5), NULL, now(), now()),
-    (1007, 'velatorio', 'Sala Velatoria Cristo Rey, Temuco', pg_temp.loc(1, '19:00'), pg_temp.loc(2, '10:00'), NULL, now(), now()),
+    (1007, 'velatorio', 'Sala Velatoria Casa Matriz, Manuel Montt 1991, Población Santa Elena, Temuco', pg_temp.loc(1, '19:00'), pg_temp.loc(2, '10:00'), NULL, now(), now()),
     (1007, 'sepultacion', 'Cementerio General de Temuco', pg_temp.loc(2, '11:00'), pg_temp.loc(2, '12:00'), NULL, now(), now());
 
 INSERT INTO pagos (expediente_id, medio_pago_id, tipo, monto, referencia, fecha, created_at, created_by, updated_at)
 SELECT x.expediente_id, m.id, 'abono', x.monto, x.referencia, x.fecha, x.fecha, p.por, x.fecha
   FROM (VALUES (1001, 'Transferencia', 1000000, 'OP-772311', pg_temp.rel(-29)),
                (1001, 'Cuota mortuoria', 450000, 'AFP-2291', pg_temp.rel(-22)),
-               (1002, 'Efectivo', 700000, NULL, pg_temp.rel(-7)),
+               (1002, 'Efectivo', 850000, NULL, pg_temp.rel(-7)),
                (1003, 'Transferencia', 1600000, 'OP-772450', pg_temp.rel(-35)),
                (1003, 'Tarjeta de débito', 500000, 'TBK-55102', pg_temp.rel(-31)),
-               (1004, 'Transferencia', 300000, 'OP-772598', pg_temp.rel(-4)),
+               (1004, 'Transferencia', 400000, 'OP-772598', pg_temp.rel(-4)),
                (1005, 'Transferencia', 1800000, 'OP-772603', pg_temp.rel(-18)),
                (1007, 'Tarjeta de crédito', 1300000, 'TBK-55190', pg_temp.rel(-27)),
                (1008, 'Efectivo', 200000, NULL, pg_temp.rel(-49))) AS x(expediente_id, medio, monto, referencia, fecha)
